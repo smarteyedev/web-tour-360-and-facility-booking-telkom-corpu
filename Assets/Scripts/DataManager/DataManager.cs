@@ -4,17 +4,20 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
+using Smarteye.RestAPI;
+using Newtonsoft.Json.Linq;
 
-public class DataManager : MonoBehaviour
+public class DataManager : RestAPIHandler
 {
   [Header("Strapi Settings")]
   [SerializeField] private string baseUrl = "http://localhost:1337";
   [SerializeField] private string jwtToken = "<PASTE_JWT_TOKEN_KAMU>";
 
-  [Header("Fetched Data (auto-filled)")]
-  [SerializeField] private List<DroneNode> droneNodes = new();
-  [SerializeField] private List<BuildingNode> buildingNodes = new();
-  [SerializeField] private List<FacilityChild> facilityChildren = new();
+  [Header("Data Master")]
+  [SerializeField] private TelkomCorpuArea telkomCorpuArea = new();
+  [SerializeField] private List<Drone> droneList = new();
+  [SerializeField] private List<Building> buildingList = new();
+  [SerializeField] private List<Facility> facilityList = new();
 
   private void Start()
   {
@@ -26,31 +29,144 @@ public class DataManager : MonoBehaviour
     string endpoint = $"{baseUrl}/graphql";
 
     string gqlQuery = @"
-        query GetTelkomCorpuArea($documentId: ID!) {
-          telkomCorpuArea(documentId: $documentId, status: PUBLISHED) {
-            drone_views_connection {
-              nodes {
-                documentId
-                name
-                background_360_image { url }
-                first_camera_pov
-                maps_image { url }
-                description_image { url }
-              }
+query GetTelkomCorpuArea($documentId: ID!) {
+  telkomCorpuArea(
+    documentId: $documentId, 
+    status: PUBLISHED
+  ) {
+    documentId
+    name
+    address
+    open_for_visitor
+    thumbnail_name
+    thumbnail_image {
+      url
+    }
+    drone_views_connection {
+      nodes {
+        documentId
+        name
+        background_360_image { 
+          url 
+        }
+        first_camera_pov
+        maps_image { 
+          url 
+        }
+        description_image { 
+          url 
+        }
+        navigations {
+          target_type
+          building_target {
+            documentId
+            name
+          }
+          facility_target {
+            documentId
+            name
+          }
+          hotspot_configuration {
+            hotspot_title
+            coordinate_x
+            coordinate_y
+            hotspot_image {
+              url
             }
-            buildings_childs_connection {
-              nodes {
-                documentId
-                name
-                facilities_childs {
-                  documentId
-                  name
-                  thumbnail_name
-                }
+          }
+        }
+      }
+    }
+    buildings_childs_connection {
+      nodes {
+        documentId
+        name
+        background_360_image {
+          url
+        }
+        first_camera_pov
+        maps_image {
+          url
+        }
+        description_image {
+          url
+        }
+        facilities_childs {
+          documentId
+          name
+          category_functionality {
+            functionality
+            description
+          }
+          bookable_status
+          show_on_menu_panel
+          background_360_image {
+            url
+          }
+          first_camera_pov
+          thumbnail_image {
+            url
+          }
+          thumbnail_name
+          facility_detail_image {
+            url
+          }
+          description_text
+          gallery {
+            content_images {
+              url
+            }
+            hotspot_configuration {
+              hotspot_title
+              coordinate_x
+              coordinate_y
+              hotspot_image {
+                url
               }
             }
           }
-        }";
+          navigations {
+            target_type
+            building_target {
+              documentId
+              name
+            }
+            facility_target {
+              documentId
+              name
+            }
+            hotspot_configuration {
+              hotspot_title
+              coordinate_x
+              coordinate_y
+              hotspot_image {
+                url
+              }
+            }
+          }
+        }
+        navigations {
+          target_type
+          building_target {
+            documentId
+          }
+          facility_target {
+            documentId
+          }
+          hotspot_configuration {
+            hotspot_title
+            coordinate_x
+            coordinate_y
+            hotspot_image{
+              url
+            }
+          }
+        }
+      }
+    }
+  }
+}";
+
 
     var payload = new
     {
@@ -78,7 +194,7 @@ public class DataManager : MonoBehaviour
     string responseText = request.downloadHandler.text;
     Debug.Log($"✅ Response:\n{responseText}");
 
-    var response = JsonConvert.DeserializeObject<GqlResponse<GetTelkomCorpuAreaData>>(responseText);
+    var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreaDataMaster>>(responseText);
 
     // Pastikan ada data
     if (response.data == null || response.data.telkomCorpuArea == null)
@@ -88,22 +204,31 @@ public class DataManager : MonoBehaviour
     }
 
     // Pisahkan ke masing-masing list
-    droneNodes = response.data.telkomCorpuArea.drone_views_connection.nodes;
-    buildingNodes = response.data.telkomCorpuArea.buildings_childs_connection.nodes;
-    facilityChildren = new List<FacilityChild>();
+    telkomCorpuArea = response.data.telkomCorpuArea;
+    droneList = response.data.telkomCorpuArea.drone_views_connection.nodes;
+    buildingList = response.data.telkomCorpuArea.buildings_childs_connection.nodes;
+    facilityList = new List<Facility>();
 
     // Ambil semua fasilitas dari tiap building
-    foreach (var building in buildingNodes)
+    foreach (var building in buildingList)
     {
       if (building.facilities_childs != null)
-        facilityChildren.AddRange(building.facilities_childs);
+        facilityList.AddRange(building.facilities_childs);
     }
-
-    Debug.Log($"📡 DroneNodes: {droneNodes.Count} | Buildings: {buildingNodes.Count} | Facilities: {facilityChildren.Count}");
   }
 
-  // Public getter (opsional)
-  public List<DroneNode> GetDroneNodes() => droneNodes;
-  public List<BuildingNode> GetBuildingNodes() => buildingNodes;
-  public List<FacilityChild> GetFacilityChildren() => facilityChildren;
+  public void GetCorpuArea(string documentId)
+  {
+    
+  }
+
+  public override void OnSuccessResult(JObject result)
+  {
+
+  }
+
+  public override void OnProtocolErr(JObject result)
+  {
+
+  }
 }
