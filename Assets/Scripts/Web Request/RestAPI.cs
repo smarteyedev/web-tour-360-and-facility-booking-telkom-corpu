@@ -6,7 +6,6 @@ using System;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Smarteye.RestAPI
 {
@@ -54,13 +53,13 @@ namespace Smarteye.RestAPI
             StartCoroutine(Get(uri, success, err));
         }
 
-        public void PostWithHeaderAndBody(string _endpointTitle, bool _isUsingToken, string _body, Action<JObject> _success, Action<JObject> _err)
+        public void PostWithHeaderAndBody(string _endpointTitle, string _body, Action<JObject> _success, Action<JObject> _err)
         {
             string token = null;
             string uri = targetAPIConfig.baseUrl + targetAPIConfig.GetEndpoint(_endpointTitle);
 
             Dictionary<string, string> header = new Dictionary<string, string>();
-            if (_isUsingToken)
+            if (targetAPIConfig.isUsingBearerAuth)
             {
                 token = targetAPIConfig.jwtToken;
                 header["Authorization"] = $"Bearer {token}";

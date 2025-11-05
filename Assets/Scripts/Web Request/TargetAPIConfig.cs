@@ -18,10 +18,12 @@ namespace Smarteye.RestAPI
         }
 
         [Header("Authorization")]
+        public bool isUsingBasicAuth;
         public string username;
         public string password;
 
-        [Space(5f)]
+        [Space(10f)]
+        public bool isUsingBearerAuth;
         public string jwtToken;
 
 

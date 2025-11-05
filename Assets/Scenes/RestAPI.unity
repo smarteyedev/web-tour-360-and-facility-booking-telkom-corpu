@@ -1234,13 +1234,9 @@ MonoBehaviour:
     thumbnail_name: 
     thumbnail_image:
       url: 
-    drone_views_connection:
-      nodes: []
-    buildings_childs_connection:
-      nodes: []
-  _droneList: []
-  _buildingList: []
-  _facilityList: []
+    drone_views: []
+    buildings_childs: []
+  _locationDataList: []
   _loadingScreen: {fileID: 476964102}
 --- !u!4 &1753755499
 Transform:

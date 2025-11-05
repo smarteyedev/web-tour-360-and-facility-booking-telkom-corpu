@@ -3,7 +3,8 @@ using System;
 
 namespace WebTourCorpu.DataManager
 {
-    #region ===== JSON MODEL =====
+    #region ===== Strapi Data Model =====
+
     [Serializable]
     public class GqlResponse<T>
     {
@@ -17,6 +18,17 @@ namespace WebTourCorpu.DataManager
     }
 
     [Serializable]
+    public class TelkomCorpuAreaCard
+    {
+        public string name;
+        public string documentId;
+        public string address;
+        public bool open_for_visitor;
+        public string thumbnail_name;
+        public ImageField thumbnail_image;
+    }
+
+    [Serializable]
     public class TelkomCorpuArea
     {
         public string name;
@@ -25,14 +37,8 @@ namespace WebTourCorpu.DataManager
         public bool open_for_visitor;
         public string thumbnail_name;
         public ImageField thumbnail_image;
-        public DroneViewConnection drone_views_connection;
-        public BuildingConnection buildings_childs_connection;
-    }
-
-    [Serializable]
-    public class DroneViewConnection
-    {
-        public List<Drone> nodes;
+        public List<Drone> drone_views;
+        public List<Building> buildings_childs;
     }
 
     [Serializable]
@@ -45,12 +51,6 @@ namespace WebTourCorpu.DataManager
         public ImageField maps_image;
         public ImageField description_image;
         public List<NavigationSetting> navigations;
-    }
-
-    [Serializable]
-    public class BuildingConnection
-    {
-        public List<Building> nodes;
     }
 
     [Serializable]
