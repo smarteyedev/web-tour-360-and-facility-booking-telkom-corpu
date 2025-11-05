@@ -11,10 +11,9 @@ namespace WebTourCorpu.DataManager
         public T data;
     }
 
-    [Serializable]
-    public class TelkomCorpuAreaDataMaster
+    public class TelkomCorpuAreas
     {
-        public TelkomCorpuArea telkomCorpuArea;
+        public List<TelkomCorpuAreaCard> telkomCorpuAreas;
     }
 
     [Serializable]
@@ -26,6 +25,12 @@ namespace WebTourCorpu.DataManager
         public bool open_for_visitor;
         public string thumbnail_name;
         public ImageField thumbnail_image;
+    }
+
+    [Serializable]
+    public class TelkomCorpuAreaDataMaster
+    {
+        public TelkomCorpuArea telkomCorpuArea;
     }
 
     [Serializable]

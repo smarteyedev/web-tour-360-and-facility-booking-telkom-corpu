@@ -11,6 +11,7 @@ namespace WebTourCorpu.DataManager
   {
     [Header("Data Manager | Data Asset")]
     //! [SerializeField] private TelkomCorpuArea _telkomCorpuArea = new();
+    [SerializeField] private List<TelkomCorpuAreaCard> TelkomCorpuAreaOptionList = new();
     [SerializeField] private TelkomCorpuAreaCard TelkomCorpuAreaSelected = new();
     [SerializeField] private List<LocationDataModel> _locationDataList = new();
 
@@ -19,10 +20,27 @@ namespace WebTourCorpu.DataManager
 
     private void Start()
     {
-      GetCorpuArea($"f3jcumigzcg986pz2s39di0y");
+      //! GetCorpuArea($"t3q960e8tpza3nu16hjmrdj5");
+      GetTelkomCorpuAreaOptionList();
     }
 
-    public void GetCorpuArea(string documentId)
+    public void GetTelkomCorpuAreaOptionList()
+    {
+      StartCoroutine(_loadingScreen.LoadingScreenForApiProcess(
+        _loadingProcess: TelkomCorpuAreaOption,
+        _documentId: "",
+        _onComplete: () =>
+        {
+          // loading process complete
+        },
+        _onError: () =>
+        {
+          // loading process error when web request fail
+        }
+      ));
+    }
+
+    public void GetTelkomCorpuDataMaster(string documentId)
     {
       StartCoroutine(_loadingScreen.LoadingScreenForApiProcess(
         _loadingProcess: GetTelkomCorpuDataMaster,
@@ -36,6 +54,53 @@ namespace WebTourCorpu.DataManager
           // loading process error when web request fail
         }
       ));
+    }
+
+    public IEnumerator TelkomCorpuAreaOption(Action<bool> _onResult, string _documentId)
+    {
+      bool isDone = false;
+      bool success = false;
+
+      string gqlQuery = @"
+      query CorpuAreaSelection{
+        telkomCorpuAreas {
+          documentId
+          name
+          address
+          open_for_visitor
+        }
+      }";
+
+      var body = new
+      {
+        query = gqlQuery,
+      };
+
+      string jsonBody = JsonConvert.SerializeObject(body);
+
+      restAPI.PostWithHeaderAndBody(
+        _endpointTitle: "HitStrapi",
+        _body: jsonBody,
+        _success: (result) =>
+        {
+          var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreas>>(result.ToString());
+
+          TelkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
+
+          success = true;
+          isDone = true;
+        },
+        _err: (errResult) =>
+        {
+
+          success = false;
+          isDone = true;
+        });
+
+      while (!isDone)
+        yield return null;
+
+      _onResult?.Invoke(success);
     }
 
     public IEnumerator GetTelkomCorpuDataMaster(Action<bool> _onResult, string _documentId)
@@ -184,27 +249,20 @@ query GetTelkomCorpuArea($documentId: ID!) {
   }
 }";
 
-      var payload = new
+      var body = new
       {
         query = gqlQuery,
         variables = new { documentId = _documentId }
       };
 
-      string jsonPayload = JsonConvert.SerializeObject(payload);
+      string jsonBody = JsonConvert.SerializeObject(body);
 
       restAPI.PostWithHeaderAndBody(
         _endpointTitle: "HitStrapi",
-        _body: jsonPayload,
+        _body: jsonBody,
         _success: (result) =>
         {
           var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreaDataMaster>>(result.ToString());
-
-          //! Pastikan ada data
-          /* if (response.data == null || response.data.telkomCorpuArea == null)
-          {
-            Debug.LogWarning("⚠️ Data kosong dari Strapi");
-            yield break;
-          } */
 
           //! _telkomCorpuArea = response.data.telkomCorpuArea;
 
@@ -214,6 +272,11 @@ query GetTelkomCorpuArea($documentId: ID!) {
           TelkomCorpuAreaSelected.address = card.address;
           TelkomCorpuAreaSelected.open_for_visitor = card.open_for_visitor;
           TelkomCorpuAreaSelected.thumbnail_name = card.thumbnail_name;
+
+          if (response.data == null || response.data.telkomCorpuArea == null && response.data.telkomCorpuArea.open_for_visitor == true)
+          {
+            TelkomCorpuAreaSelected.open_for_visitor = false;
+          }
 
           BuildLocationList(response.data.telkomCorpuArea);
 
