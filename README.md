@@ -1,4 +1,4 @@
-# [web-tour-360-and-facility-booking-telkom-corpu]
+# web-tour-360-and-facility-booking-telkom-corpu
 
 ## Description
 
@@ -28,6 +28,7 @@ This web tour is a representation of the [facilitycorpu.id](https://facilitycorp
 - Audio Manager Pro [1.1.9]
 - Build Report Tool [3.13.3]
 - Colourful Hierarchy Category GameObject [1.2]
+- Sprite Editor [1.0.0]
 
 ---
 

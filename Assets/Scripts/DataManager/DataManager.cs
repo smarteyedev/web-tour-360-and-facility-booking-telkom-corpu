@@ -1,34 +1,52 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using UnityEngine.Networking;
 using Newtonsoft.Json;
 using Smarteye.RestAPI;
-using Newtonsoft.Json.Linq;
+using System;
 
-public class DataManager : RestAPIHandler
+namespace WebTourCorpu.DataManager
 {
-  [Header("Strapi Settings")]
-  [SerializeField] private string baseUrl = "http://localhost:1337";
-  [SerializeField] private string jwtToken = "<PASTE_JWT_TOKEN_KAMU>";
-
-  [Header("Data Master")]
-  [SerializeField] private TelkomCorpuArea telkomCorpuArea = new();
-  [SerializeField] private List<Drone> droneList = new();
-  [SerializeField] private List<Building> buildingList = new();
-  [SerializeField] private List<Facility> facilityList = new();
-
-  private void Start()
+  public class DataManager : RestAPIHandler
   {
-    StartCoroutine(FetchTelkomCorpuArea($"t3q960e8tpza3nu16hjmrdj5"));
-  }
+    [Header("Strapi Settings")]
 
-  public IEnumerator FetchTelkomCorpuArea(string documentId)
-  {
-    string endpoint = $"{baseUrl}/graphql";
+    [Header("Data Master")]
+    [SerializeField] private TelkomCorpuArea _telkomCorpuArea = new();
+    [SerializeField] private List<Drone> _droneList = new();
+    [SerializeField] private List<Building> _buildingList = new();
+    [SerializeField] private List<Facility> _facilityList = new();
 
-    string gqlQuery = @"
+    [Header("Component References")]
+    [SerializeField] private LoadingScreenHandler _loadingScreen;
+
+    private void Start()
+    {
+      GetCorpuArea($"t3q960e8tpza3nu16hjmrdj5");
+    }
+
+    public void GetCorpuArea(string documentId)
+    {
+      StartCoroutine(_loadingScreen.LoadingScreenForApiProcess(
+        _loadingProcess: GetTelkomCorpuDataMaster,
+        _documentId: documentId,
+        _onComplete: () =>
+        {
+          // loading process complete
+        },
+        _onError: () =>
+        {
+          // loading process error when web request fail
+        }
+      ));
+    }
+
+    public IEnumerator GetTelkomCorpuDataMaster(Action<bool> _onResult, string _documentId)
+    {
+      bool isDone = false;
+      bool success = false;
+
+      string gqlQuery = @"
 query GetTelkomCorpuArea($documentId: ID!) {
   telkomCorpuArea(
     documentId: $documentId, 
@@ -167,68 +185,56 @@ query GetTelkomCorpuArea($documentId: ID!) {
   }
 }";
 
+      var payload = new
+      {
+        query = gqlQuery,
+        variables = new { documentId = _documentId }
+      };
 
-    var payload = new
-    {
-      query = gqlQuery,
-      variables = new { documentId = documentId }
-    };
+      string jsonPayload = JsonConvert.SerializeObject(payload);
 
-    string jsonPayload = JsonConvert.SerializeObject(payload);
-    byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonPayload);
+      restAPI.PostWithHeaderAndBody(
+        _endpointTitle: "post",
+        _isUsingToken: true,
+        _body: jsonPayload,
+        _success: (result) =>
+        {
+          var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreaDataMaster>>(result.ToString());
 
-    UnityWebRequest request = new UnityWebRequest(endpoint, "POST");
-    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-    request.downloadHandler = new DownloadHandlerBuffer();
-    request.SetRequestHeader("Content-Type", "application/json");
-    request.SetRequestHeader("Authorization", "Bearer " + jwtToken);
+          //! Pastikan ada data
+          /* if (response.data == null || response.data.telkomCorpuArea == null)
+          {
+            Debug.LogWarning("⚠️ Data kosong dari Strapi");
+            yield break;
+          } */
 
-    yield return request.SendWebRequest();
+          // Separate data
+          _telkomCorpuArea = response.data.telkomCorpuArea;
+          _droneList = response.data.telkomCorpuArea.drone_views_connection.nodes;
+          _buildingList = response.data.telkomCorpuArea.buildings_childs_connection.nodes;
+          _facilityList = new List<Facility>();
 
-    if (request.result != UnityWebRequest.Result.Success)
-    {
-      Debug.LogError($"❌ GraphQL Error: {request.error}\n{request.downloadHandler.text}");
-      yield break;
+          // initial data
+          foreach (var building in _buildingList)
+          {
+            if (building.facilities_childs != null)
+              _facilityList.AddRange(building.facilities_childs);
+          }
+
+          success = true;
+          isDone = true;
+        },
+        _err: (errResult) =>
+        {
+          success = false;
+          isDone = true;
+        }
+      );
+
+      while (!isDone)
+        yield return null;
+
+      _onResult?.Invoke(success);
     }
-
-    string responseText = request.downloadHandler.text;
-    Debug.Log($"✅ Response:\n{responseText}");
-
-    var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreaDataMaster>>(responseText);
-
-    // Pastikan ada data
-    if (response.data == null || response.data.telkomCorpuArea == null)
-    {
-      Debug.LogWarning("⚠️ Data kosong dari Strapi");
-      yield break;
-    }
-
-    // Pisahkan ke masing-masing list
-    telkomCorpuArea = response.data.telkomCorpuArea;
-    droneList = response.data.telkomCorpuArea.drone_views_connection.nodes;
-    buildingList = response.data.telkomCorpuArea.buildings_childs_connection.nodes;
-    facilityList = new List<Facility>();
-
-    // Ambil semua fasilitas dari tiap building
-    foreach (var building in buildingList)
-    {
-      if (building.facilities_childs != null)
-        facilityList.AddRange(building.facilities_childs);
-    }
-  }
-
-  public void GetCorpuArea(string documentId)
-  {
-    
-  }
-
-  public override void OnSuccessResult(JObject result)
-  {
-
-  }
-
-  public override void OnProtocolErr(JObject result)
-  {
-
   }
 }
