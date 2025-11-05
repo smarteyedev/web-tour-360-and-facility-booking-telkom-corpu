@@ -68,6 +68,11 @@ namespace Smarteye.RestAPI
             StartCoroutine(Post(uri, header, _body, _success, _err));
         }
 
+        public void GetAssetTexture(string _url, Action<Texture2D> _onSuccess, Action<string> _onErr)
+        {
+            StartCoroutine(DownloadTexture(_url, _onSuccess, _onErr));
+        }
+
         #endregion
 
         #region Coroutines
@@ -155,6 +160,29 @@ namespace Smarteye.RestAPI
 
                 yield return request.SendWebRequest();
                 HandleResponse(request, success, err);
+            }
+        }
+
+        public IEnumerator DownloadTexture(string uri, Action<Texture2D> _onSuccess, Action<string> _onErr)
+        {
+            using (var req = UnityWebRequestTexture.GetTexture(uri, true))
+            {
+                req.timeout = 15;
+                yield return req.SendWebRequest();
+
+                if (req.result != UnityWebRequest.Result.Success)
+                {
+                    _onErr?.Invoke($"Failed: {req.responseCode} - {req.error}");
+                    yield break;
+                }
+
+                Texture2D tex = DownloadHandlerTexture.GetContent(req);
+                if (tex == null)
+                {
+                    _onErr?.Invoke($"texture null / gagal decode");
+                }
+
+                _onSuccess?.Invoke(tex);
             }
         }
 

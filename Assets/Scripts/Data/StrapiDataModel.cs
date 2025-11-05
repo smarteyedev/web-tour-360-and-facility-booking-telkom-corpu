@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 namespace WebTourCorpu.DataManager
 {
@@ -107,6 +108,20 @@ namespace WebTourCorpu.DataManager
     public class ImageField
     {
         public string url;
+        public Texture2D textureImage;
+
+        public Sprite GetSpriteImage()
+        {
+            if (textureImage == null)
+            {
+                Debug.Log($"asset is null");
+                return null;
+            }
+
+            var rect = new Rect(0, 0, textureImage.width, textureImage.height);
+            var pivot = new Vector2(0.5f, 0.5f);
+            return Sprite.Create(textureImage, rect, pivot, 100f, 0, SpriteMeshType.Tight, Vector4.zero, false);
+        }
     }
 
     [Serializable]

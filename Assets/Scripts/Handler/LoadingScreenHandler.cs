@@ -9,7 +9,7 @@ namespace WebTourCorpu.DataManager
     public class LoadingScreenHandler : MonoBehaviour
     {
         [Header("UI Component References")]
-        [SerializeField] private GameObject _screenPanel;
+        [SerializeField] public GameObject _screenPanel;
         [SerializeField] private Slider _loadingBar;
 
         public IEnumerator LoadingScreenForApiProcess(Func<Action<bool>, string, IEnumerator> _loadingProcess, String _documentId, Action _onComplete = null, Action _onError = null)
@@ -43,6 +43,9 @@ namespace WebTourCorpu.DataManager
             {
                 _loadingBar.value = 1f;
                 yield return new WaitForSeconds(0.5f);
+
+                _screenPanel.SetActive(false);
+                _loadingBar.value = 0f;
 
                 _onComplete?.Invoke();
             }

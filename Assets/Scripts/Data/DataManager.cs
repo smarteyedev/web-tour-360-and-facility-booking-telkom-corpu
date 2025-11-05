@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Smarteye.RestAPI;
 using System;
+using UnityEngine.UI;
 
 namespace WebTourCorpu.DataManager
 {
@@ -17,10 +18,11 @@ namespace WebTourCorpu.DataManager
 
     [Header("Data Manager | Component References")]
     [SerializeField] private LoadingScreenHandler _loadingScreen;
+    [SerializeField] private Image targetSprite;
 
     private void Start()
     {
-      //! GetCorpuArea($"t3q960e8tpza3nu16hjmrdj5");
+      // GetTelkomCorpuDataMaster($"t3q960e8tpza3nu16hjmrdj5");
       GetTelkomCorpuAreaOptionList();
     }
 
@@ -56,6 +58,24 @@ namespace WebTourCorpu.DataManager
       ));
     }
 
+    public void GetLocationAsset()
+    {
+      TelkomCorpuAreaCard card = TelkomCorpuAreaOptionList[0];
+
+      restAPI.GetAssetTexture(
+        $"http://localhost:1337{card.thumbnail_image.url}",
+        (tex) =>
+        {
+          card.thumbnail_image.textureImage = tex;
+          targetSprite.sprite = card.thumbnail_image.GetSpriteImage();
+        },
+        (errMessage) =>
+        {
+          Debug.Log($"{errMessage}");
+        }
+      );
+    }
+
     public IEnumerator TelkomCorpuAreaOption(Action<bool> _onResult, string _documentId)
     {
       bool isDone = false;
@@ -68,6 +88,9 @@ namespace WebTourCorpu.DataManager
           name
           address
           open_for_visitor
+          thumbnail_image {
+            url
+          }
         }
       }";
 
