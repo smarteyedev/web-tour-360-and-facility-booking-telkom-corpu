@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6cf05fb1f20ebc84aa2263f1b836d6a0, type: 3}
-  m_Name: Strapi API
+  m_Name: Strapi API (Local Host)
   m_EditorClassIdentifier: 
-  baseUrl: 
+  baseUrl: http://localhost:1337
   endpoints:
   - title: HitStrapi
     targetEndpoint: /graphql

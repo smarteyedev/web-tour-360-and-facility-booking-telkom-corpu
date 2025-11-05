@@ -188,13 +188,14 @@ query GetTelkomCorpuArea($documentId: ID!) {
       var payload = new
       {
         query = gqlQuery,
+        // variables = new { documentId = $"t3q960e8tpza3nu16hjmrdj5" }
         variables = new { documentId = _documentId }
       };
 
       string jsonPayload = JsonConvert.SerializeObject(payload);
 
       restAPI.PostWithHeaderAndBody(
-        _endpointTitle: "post",
+        _endpointTitle: "HitStrapi",
         _isUsingToken: true,
         _body: jsonPayload,
         _success: (result) =>

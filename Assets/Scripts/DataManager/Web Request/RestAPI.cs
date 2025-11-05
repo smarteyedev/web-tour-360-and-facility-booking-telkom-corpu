@@ -60,7 +60,6 @@ namespace Smarteye.RestAPI
             string uri = targetAPIConfig.baseUrl + targetAPIConfig.GetEndpoint(_endpointTitle);
 
             Dictionary<string, string> header = new Dictionary<string, string>();
-            header["Content-Type"] = "application/json";
             if (_isUsingToken)
             {
                 token = targetAPIConfig.jwtToken;
