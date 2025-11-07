@@ -4,79 +4,80 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Smarteye.RestAPI;
 using System;
-using UnityEngine.UI;
 
 namespace WebTourCorpu.DataManager
 {
   public class DataManager : RestAPIHandler
   {
     [Header("Data Manager | Data Asset")]
-    //! [SerializeField] private TelkomCorpuArea _telkomCorpuArea = new();
-    [SerializeField] private List<TelkomCorpuAreaCard> TelkomCorpuAreaOptionList = new();
-    [SerializeField] private TelkomCorpuAreaCard TelkomCorpuAreaSelected = new();
+    [SerializeField] private List<TelkomCorpuAreaCard> _telkomCorpuAreaOptionList = new();
+    [SerializeField] private TelkomCorpuAreaCard _telkomCorpuAreaSelected = new();
     [SerializeField] private List<LocationDataModel> _locationDataList = new();
 
-    [Header("Data Manager | Component References")]
-    [SerializeField] private LoadingScreenHandler _loadingScreen;
-    [SerializeField] private Image targetSprite;
-
-    private void Start()
+    public IEnumerator RequestCorpuAreaOptionsData(
+        Action<List<TelkomCorpuAreaCard>> onDone,
+        Action<float> onProgress = null,
+        bool forceRedownload = false
+    )
     {
-      // GetTelkomCorpuDataMaster($"t3q960e8tpza3nu16hjmrdj5");
-      GetTelkomCorpuAreaOptionList();
-    }
+      if (_telkomCorpuAreaOptionList == null)
+      {
+        _telkomCorpuAreaOptionList = new List<TelkomCorpuAreaCard>();
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(_telkomCorpuAreaOptionList);
+        yield break;
+      }
 
-    public void GetTelkomCorpuAreaOptionList()
-    {
-      StartCoroutine(_loadingScreen.LoadingScreenForApiProcess(
-        _loadingProcess: TelkomCorpuAreaOption,
-        _documentId: "",
-        _onComplete: () =>
+      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+
+      foreach (var card in _telkomCorpuAreaOptionList)
+      {
+        if (card == null) continue;
+
+        bool needDownload = forceRedownload ? true : !card.IsImageAssetDownloaded();
+
+        if (needDownload)
         {
-          // loading process complete
-        },
-        _onError: () =>
-        {
-          // loading process error when web request fail
+          var pairs = card.DownloadAssetList(restAPI.targetAPIConfig.baseUrl);
+          foreach (var kv in pairs)
+          {
+            downloadTargets[kv.Key] = kv.Value;
+          }
         }
-      ));
-    }
+      }
 
-    public void GetTelkomCorpuDataMaster(string documentId)
-    {
-      StartCoroutine(_loadingScreen.LoadingScreenForApiProcess(
-        _loadingProcess: GetTelkomCorpuDataMaster,
-        _documentId: documentId,
-        _onComplete: () =>
-        {
-          // loading process complete
-        },
-        _onError: () =>
-        {
-          // loading process error when web request fail
-        }
-      ));
-    }
+      if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(_telkomCorpuAreaOptionList);
+        yield break;
+      }
 
-    public void GetLocationAsset()
-    {
-      TelkomCorpuAreaCard card = TelkomCorpuAreaOptionList[0];
+      bool finished = false;
 
-      restAPI.GetAssetTexture(
-        $"http://localhost:1337{card.thumbnail_image.url}",
-        (tex) =>
-        {
-          card.thumbnail_image.textureImage = tex;
-          targetSprite.sprite = card.thumbnail_image.GetSpriteImage();
-        },
-        (errMessage) =>
-        {
-          Debug.Log($"{errMessage}");
-        }
+      restAPI.GetAssetTextures(
+          downloadTargets,
+          onProgress: p =>
+          {
+            onProgress?.Invoke(p);
+          },
+          onDone: fails =>
+          {
+            if (fails != null && fails.Count > 0)
+            {
+              foreach (var f in fails) Debug.LogWarning($"Download fail: {f}");
+            }
+            finished = true;
+          }
       );
+
+      yield return new WaitUntil(() => finished);
+
+      onProgress?.Invoke(1f);
+      onDone?.Invoke(_telkomCorpuAreaOptionList);
     }
 
-    public IEnumerator TelkomCorpuAreaOption(Action<bool> _onResult, string _documentId)
+    public IEnumerator GetTelkomCorpuAreaOption(Action<bool> _onResult, string _documentId)
     {
       bool isDone = false;
       bool success = false;
@@ -88,6 +89,7 @@ namespace WebTourCorpu.DataManager
           name
           address
           open_for_visitor
+          thumbnail_name
           thumbnail_image {
             url
           }
@@ -108,7 +110,7 @@ namespace WebTourCorpu.DataManager
         {
           var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreas>>(result.ToString());
 
-          TelkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
+          _telkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
 
           success = true;
           isDone = true;
@@ -287,18 +289,16 @@ query GetTelkomCorpuArea($documentId: ID!) {
         {
           var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreaDataMaster>>(result.ToString());
 
-          //! _telkomCorpuArea = response.data.telkomCorpuArea;
-
           TelkomCorpuArea card = response.data.telkomCorpuArea;
-          TelkomCorpuAreaSelected.name = card.name;
-          TelkomCorpuAreaSelected.documentId = card.documentId;
-          TelkomCorpuAreaSelected.address = card.address;
-          TelkomCorpuAreaSelected.open_for_visitor = card.open_for_visitor;
-          TelkomCorpuAreaSelected.thumbnail_name = card.thumbnail_name;
+          _telkomCorpuAreaSelected.name = card.name;
+          _telkomCorpuAreaSelected.documentId = card.documentId;
+          _telkomCorpuAreaSelected.address = card.address;
+          _telkomCorpuAreaSelected.open_for_visitor = card.open_for_visitor;
+          _telkomCorpuAreaSelected.thumbnail_name = card.thumbnail_name;
 
           if (response.data == null || response.data.telkomCorpuArea == null && response.data.telkomCorpuArea.open_for_visitor == true)
           {
-            TelkomCorpuAreaSelected.open_for_visitor = false;
+            _telkomCorpuAreaSelected.open_for_visitor = false;
           }
 
           BuildLocationList(response.data.telkomCorpuArea);

@@ -76,6 +76,57 @@ namespace WebTourCorpu.DataManager
                 navigations = f.navigations
             };
         }
+
+        public Dictionary<Action<Texture2D>, string> DownloadAssetList(string baseUrl = null)
+        {
+            var targets = new Dictionary<Action<Texture2D>, string>();
+
+            if (ModelHandler.IsNeedToDownload(background_360_image))
+            {
+                targets.Add(tex => background_360_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, background_360_image.url));
+            }
+
+            if (ModelHandler.IsNeedToDownload(thumbnail_image))
+            {
+                targets.Add(tex => thumbnail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, thumbnail_image.url));
+            }
+
+            if (ModelHandler.IsNeedToDownload(facility_detail_image))
+            {
+                targets.Add(tex => facility_detail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, facility_detail_image.url));
+            }
+
+            foreach (var content in gallery)
+            {
+                foreach (var item in content.content_images)
+                {
+                    if (ModelHandler.IsNeedToDownload(item))
+                    {
+                        targets.Add(tex => item.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, item.url));
+                    }
+                }
+            }
+
+            foreach (var nav in navigations)
+            {
+                if (ModelHandler.IsNeedToDownload(nav.hotspot_configuration.hotspot_image))
+                {
+                    targets.Add(tex => nav.hotspot_configuration.hotspot_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, nav.hotspot_configuration.hotspot_image.url));
+                }
+            }
+
+            if (ModelHandler.IsNeedToDownload(maps_image))
+            {
+                targets.Add(tex => maps_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, maps_image.url));
+            }
+
+            if (ModelHandler.IsNeedToDownload(description_image))
+            {
+                targets.Add(tex => description_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, description_image.url));
+            }
+
+            return targets;
+        }
     }
 
     [Serializable]

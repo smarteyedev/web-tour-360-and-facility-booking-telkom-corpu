@@ -26,6 +26,23 @@ namespace WebTourCorpu.DataManager
         public bool open_for_visitor;
         public string thumbnail_name;
         public ImageField thumbnail_image;
+
+        public bool IsImageAssetDownloaded()
+        {
+            return thumbnail_image.textureImage != null;
+        }
+
+        public Dictionary<Action<Texture2D>, string> DownloadAssetList(string baseUrl = null)
+        {
+            var targets = new Dictionary<Action<Texture2D>, string>();
+
+            if (ModelHandler.IsNeedToDownload(thumbnail_image))
+            {
+                targets.Add(tex => thumbnail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, thumbnail_image.url));
+            }
+
+            return targets;
+        }
     }
 
     [Serializable]
@@ -164,5 +181,28 @@ namespace WebTourCorpu.DataManager
         PANEL_GALLERY,
         PANEL_NAVIGATION
     }
+
+    public static class ModelHandler
+    {
+        public static string BuildFullUrl(string baseUrl, string path)
+        {
+            // Jika sudah absolute URL, langsung pakai
+            if (Uri.TryCreate(path, UriKind.Absolute, out var abs)) return abs.ToString();
+
+            // Kalau baseUrl tidak ada, kembalikan path apa adanya
+            if (string.IsNullOrWhiteSpace(baseUrl)) return path;
+
+            // Gabungkan baseUrl + path (tangani slash ganda)
+            if (baseUrl.EndsWith("/")) baseUrl = baseUrl.TrimEnd('/');
+            if (!path.StartsWith("/")) path = "/" + path;
+            return baseUrl + path;
+        }
+
+        public static bool IsNeedToDownload(ImageField targetImage)
+        {
+            return (targetImage.textureImage == null && !string.IsNullOrEmpty(targetImage.url));
+        }
+    }
+
     #endregion
 }

@@ -709,7 +709,7 @@ GameObject:
   - component: {fileID: 476964101}
   - component: {fileID: 476964102}
   m_Layer: 5
-  m_Name: '#script Panel Loading'
+  m_Name: '#script Loading Screen Handler'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -832,9 +832,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1753755498}
-        m_TargetAssemblyTypeName: WebTourCorpu.DataManager.DataManager, Assembly-CSharp
-        m_MethodName: GetLocationAsset
+      - m_Target: {fileID: 809352891}
+        m_TargetAssemblyTypeName: Tour360TelkomCorpu.TourManager, Assembly-CSharp
+        m_MethodName: OnClickStartRequest
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1168,6 +1168,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 802811569}
   m_CullTransparentMesh: 1
+--- !u!1 &809352889
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 809352890}
+  - component: {fileID: 809352891}
+  m_Layer: 0
+  m_Name: '#script Tour Manager'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &809352890
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809352889}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &809352891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809352889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0957ddc2dd9091e419ad588895da5a24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _telkomCorpuAreaOptionList: []
+  _loadingScreen: {fileID: 476964102}
+  _dataManager: {fileID: 1753755498}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1684,7 +1731,7 @@ GameObject:
   - component: {fileID: 1753755498}
   - component: {fileID: 1753755500}
   m_Layer: 0
-  m_Name: '#script Data-Manager'
+  m_Name: '#script Data Manager'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1703,8 +1750,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   restAPI: {fileID: 1753755500}
-  TelkomCorpuAreaOptionList: []
-  TelkomCorpuAreaSelected:
+  _telkomCorpuAreaOptionList: []
+  _telkomCorpuAreaSelected:
     name: 
     documentId: 
     address: 
@@ -1715,7 +1762,6 @@ MonoBehaviour:
       textureImage: {fileID: 0}
   _locationDataList: []
   _loadingScreen: {fileID: 476964102}
-  targetSprite: {fileID: 1713980503}
 --- !u!4 &1753755499
 Transform:
   m_ObjectHideFlags: 0
@@ -1974,5 +2020,6 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 1518982116}
+  - {fileID: 809352890}
   - {fileID: 1753755499}
   - {fileID: 2037639041}

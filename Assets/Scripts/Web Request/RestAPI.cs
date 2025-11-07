@@ -68,9 +68,13 @@ namespace Smarteye.RestAPI
             StartCoroutine(Post(uri, header, _body, _success, _err));
         }
 
-        public void GetAssetTexture(string _url, Action<Texture2D> _onSuccess, Action<string> _onErr)
+        public void GetAssetTextures(
+            Dictionary<Action<Texture2D>, string> targets,
+            Action<float> onProgress,
+            Action<List<string>> onDone
+        )
         {
-            StartCoroutine(DownloadTexture(_url, _onSuccess, _onErr));
+            StartCoroutine(DownloadTextures(targets, null, onProgress, onDone));
         }
 
         #endregion
@@ -185,6 +189,71 @@ namespace Smarteye.RestAPI
                 _onSuccess?.Invoke(tex);
             }
         }
+
+        private IEnumerator DownloadTextures(
+            Dictionary<Action<Texture2D>, string> targets,
+            Dictionary<string, string> headers,
+            Action<float> onProgress,
+            Action<List<string>> onDone)
+        {
+            var failed = new List<string>();
+
+            if (targets == null || targets.Count == 0)
+            {
+                onProgress?.Invoke(1f);
+                onDone?.Invoke(failed);
+                yield break;
+            }
+
+            int total = targets.Count;
+            int finished = 0;
+
+            foreach (var pair in targets)
+            {
+                var assignAction = pair.Key; // ini fungsi yang nanti akan mengisi variabel
+                string url = pair.Value;
+
+                using (var req = UnityWebRequestTexture.GetTexture(url, false))
+                {
+                    if (headers != null)
+                    {
+                        foreach (var h in headers)
+                            req.SetRequestHeader(h.Key, h.Value);
+                    }
+
+                    req.timeout = 30;
+                    var op = req.SendWebRequest();
+
+                    while (!op.isDone)
+                    {
+                        float p = ((float)finished + Mathf.Clamp01(req.downloadProgress)) / total;
+                        onProgress?.Invoke(p);
+                        yield return null;
+                    }
+
+#if UNITY_2020_2_OR_NEWER
+                    if (req.result != UnityWebRequest.Result.Success)
+#else
+            if (req.isNetworkError || req.isHttpError)
+#endif
+                    {
+                        failed.Add($"{url} | HTTP {req.responseCode} | {req.error}");
+                    }
+                    else
+                    {
+                        Texture2D texDownloaded = DownloadHandlerTexture.GetContent(req);
+                        texDownloaded.name = System.IO.Path.GetFileName(url);
+                        assignAction?.Invoke(texDownloaded);
+                    }
+
+                    finished++;
+                    onProgress?.Invoke((float)finished / total);
+                }
+            }
+
+            onDone?.Invoke(failed);
+        }
+
 
         #endregion
 
