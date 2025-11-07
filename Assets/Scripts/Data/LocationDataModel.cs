@@ -77,6 +77,20 @@ namespace WebTourCorpu.DataManager
             };
         }
 
+        public bool IsImageAssetDownloaded()
+        {
+
+            if (locationType == LocationType.FACILITY)
+            {
+                return background_360_image.textureImage != null && thumbnail_image != null &&
+                facility_detail_image != null;
+            }
+            else
+            {
+                return background_360_image.textureImage != null && maps_image != null && description_image != null;
+            }
+        }
+
         public Dictionary<Action<Texture2D>, string> DownloadAssetList(string baseUrl = null)
         {
             var targets = new Dictionary<Action<Texture2D>, string>();
@@ -86,26 +100,30 @@ namespace WebTourCorpu.DataManager
                 targets.Add(tex => background_360_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, background_360_image.url));
             }
 
-            if (ModelHandler.IsNeedToDownload(thumbnail_image))
+            if (locationType == LocationType.FACILITY)
             {
-                targets.Add(tex => thumbnail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, thumbnail_image.url));
-            }
-
-            if (ModelHandler.IsNeedToDownload(facility_detail_image))
-            {
-                targets.Add(tex => facility_detail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, facility_detail_image.url));
-            }
-
-            foreach (var content in gallery)
-            {
-                foreach (var item in content.content_images)
+                if (ModelHandler.IsNeedToDownload(thumbnail_image))
                 {
-                    if (ModelHandler.IsNeedToDownload(item))
+                    targets.Add(tex => thumbnail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, thumbnail_image.url));
+                }
+
+                if (ModelHandler.IsNeedToDownload(facility_detail_image))
+                {
+                    targets.Add(tex => facility_detail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, facility_detail_image.url));
+                }
+
+                foreach (var content in gallery)
+                {
+                    foreach (var item in content.content_images)
                     {
-                        targets.Add(tex => item.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, item.url));
+                        if (ModelHandler.IsNeedToDownload(item))
+                        {
+                            targets.Add(tex => item.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, item.url));
+                        }
                     }
                 }
             }
+
 
             foreach (var nav in navigations)
             {

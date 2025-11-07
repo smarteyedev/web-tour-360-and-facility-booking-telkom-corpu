@@ -9,12 +9,63 @@ namespace WebTourCorpu.DataManager
 {
   public class DataManager : RestAPIHandler
   {
-    [Header("Data Manager | Data Asset")]
+    [Header("Data Manager | Cache Data Asset")]
     [SerializeField] private List<TelkomCorpuAreaCard> _telkomCorpuAreaOptionList = new();
     [SerializeField] private TelkomCorpuAreaCard _telkomCorpuAreaSelected = new();
     [SerializeField] private List<LocationDataModel> _locationDataList = new();
 
-    public IEnumerator RequestCorpuAreaOptionsData(
+    public IEnumerator GetTelkomCorpuAreaOptionData(Action<bool> onResult, string documentId)
+    {
+      bool isDone = false;
+      bool success = false;
+
+      string gqlQuery = @"
+      query CorpuAreaSelection{
+        telkomCorpuAreas {
+          documentId
+          name
+          address
+          open_for_visitor
+          thumbnail_name
+          thumbnail_image {
+            url
+          }
+        }
+      }";
+
+      var body = new
+      {
+        query = gqlQuery,
+      };
+
+      string jsonBody = JsonConvert.SerializeObject(body);
+
+      restAPI.PostWithHeaderAndBody(
+        _endpointTitle: "HitStrapi",
+        _body: jsonBody,
+        _success: (result) =>
+        {
+          var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreas>>(result.ToString());
+
+          _telkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
+
+          success = true;
+          isDone = true;
+        },
+        _err: (errResult) =>
+        {
+
+          success = false;
+          isDone = true;
+        });
+
+      while (!isDone)
+        yield return null;
+
+      onResult?.Invoke(success);
+    }
+
+    public IEnumerator RequestTelkomCorpuAreaOptionContent(
         Action<List<TelkomCorpuAreaCard>> onDone,
         Action<float> onProgress = null,
         bool forceRedownload = false
@@ -77,58 +128,7 @@ namespace WebTourCorpu.DataManager
       onDone?.Invoke(_telkomCorpuAreaOptionList);
     }
 
-    public IEnumerator GetTelkomCorpuAreaOption(Action<bool> _onResult, string _documentId)
-    {
-      bool isDone = false;
-      bool success = false;
-
-      string gqlQuery = @"
-      query CorpuAreaSelection{
-        telkomCorpuAreas {
-          documentId
-          name
-          address
-          open_for_visitor
-          thumbnail_name
-          thumbnail_image {
-            url
-          }
-        }
-      }";
-
-      var body = new
-      {
-        query = gqlQuery,
-      };
-
-      string jsonBody = JsonConvert.SerializeObject(body);
-
-      restAPI.PostWithHeaderAndBody(
-        _endpointTitle: "HitStrapi",
-        _body: jsonBody,
-        _success: (result) =>
-        {
-          var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreas>>(result.ToString());
-
-          _telkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
-
-          success = true;
-          isDone = true;
-        },
-        _err: (errResult) =>
-        {
-
-          success = false;
-          isDone = true;
-        });
-
-      while (!isDone)
-        yield return null;
-
-      _onResult?.Invoke(success);
-    }
-
-    public IEnumerator GetTelkomCorpuDataMaster(Action<bool> _onResult, string _documentId)
+    public IEnumerator GetTelkomCorpuDataMaster(Action<bool> onResult, string documentId)
     {
       bool isDone = false;
       bool success = false;
@@ -277,7 +277,7 @@ query GetTelkomCorpuArea($documentId: ID!) {
       var body = new
       {
         query = gqlQuery,
-        variables = new { documentId = _documentId }
+        variables = new { documentId = documentId }
       };
 
       string jsonBody = JsonConvert.SerializeObject(body);
@@ -316,24 +316,24 @@ query GetTelkomCorpuArea($documentId: ID!) {
       while (!isDone)
         yield return null;
 
-      _onResult?.Invoke(success);
+      onResult?.Invoke(success);
     }
 
-    private void BuildLocationList(TelkomCorpuArea selectionArea)
+    private void BuildLocationList(TelkomCorpuArea _selectionArea)
     {
       var result = new List<LocationDataModel>();
 
       // 1. Convert Drone Data
-      if (selectionArea.drone_views != null)
+      if (_selectionArea.drone_views != null)
       {
-        foreach (var d in selectionArea.drone_views)
+        foreach (var d in _selectionArea.drone_views)
           result.Add(LocationDataModel.FromDrone(d));
       }
 
       // 2. Convert Building data
-      if (selectionArea.buildings_childs != null)
+      if (_selectionArea.buildings_childs != null)
       {
-        foreach (var b in selectionArea.buildings_childs)
+        foreach (var b in _selectionArea.buildings_childs)
         {
           result.Add(LocationDataModel.FromBuilding(b));
 
@@ -346,6 +346,61 @@ query GetTelkomCorpuArea($documentId: ID!) {
       _locationDataList = result;
 
       Debug.Log($"Total location Data list: {_locationDataList.Count}");
+    }
+
+    public IEnumerator RequestLocationDataContentByIndex(
+      int locationIndex,
+      Action<LocationDataModel> onDone,
+      Action<float> onProgress = null,
+      bool forceRedownload = false
+    )
+    {
+      if (_locationDataList == null)
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(null);
+        yield break;
+      }
+
+      var locationTarget = _locationDataList[locationIndex];
+
+      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+      bool needDownload = forceRedownload ? true : !locationTarget.IsImageAssetDownloaded();
+      var pairs = locationTarget.DownloadAssetList(restAPI.targetAPIConfig.baseUrl);
+      foreach (var kv in pairs)
+      {
+        downloadTargets[kv.Key] = kv.Value;
+      }
+
+      if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(null);
+        yield break;
+      }
+
+      bool finished = false;
+
+      restAPI.GetAssetTextures(
+          downloadTargets,
+          onProgress: p =>
+          {
+            onProgress?.Invoke(p);
+          },
+          onDone: fails =>
+          {
+            if (fails != null && fails.Count > 0)
+            {
+              foreach (var f in fails) Debug.LogWarning($"Download fail: {f}");
+            }
+            finished = true;
+          }
+      );
+
+      yield return new WaitUntil(() => finished);
+
+      onProgress?.Invoke(1f);
+      onDone?.Invoke(locationTarget);
     }
   }
 }

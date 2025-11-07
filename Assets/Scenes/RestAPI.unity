@@ -180,7 +180,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Get Texture
+  m_text: Get Data Master
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -834,8 +834,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 809352891}
         m_TargetAssemblyTypeName: Tour360TelkomCorpu.TourManager, Assembly-CSharp
-        m_MethodName: OnClickStartRequest
-        m_Mode: 1
+        m_MethodName: GetTelkomCorpuDataMaster
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1212,7 +1212,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0957ddc2dd9091e419ad588895da5a24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _telkomCorpuAreaOptionList: []
+  _currentLocationIndex: 0
+  _locationData:
+    name: 
+    documentId: 
+    locationType: 0
+    category_functionality:
+      functionality: 
+      description: 
+    bookable_status: 0
+    show_on_menu_panel: 0
+    background_360_image:
+      url: 
+      textureImage: {fileID: 0}
+    first_camera_pov: 0
+    thumbnail_image:
+      url: 
+      textureImage: {fileID: 0}
+    thumbnail_name: 
+    facility_detail_image:
+      url: 
+      textureImage: {fileID: 0}
+    description_text: 
+    gallery: []
+    navigations: []
+    maps_image:
+      url: 
+      textureImage: {fileID: 0}
+    description_image:
+      url: 
+      textureImage: {fileID: 0}
   _loadingScreen: {fileID: 476964102}
   _dataManager: {fileID: 1753755498}
 --- !u!1 &832575517
@@ -1761,7 +1790,6 @@ MonoBehaviour:
       url: 
       textureImage: {fileID: 0}
   _locationDataList: []
-  _loadingScreen: {fileID: 476964102}
 --- !u!4 &1753755499
 Transform:
   m_ObjectHideFlags: 0
