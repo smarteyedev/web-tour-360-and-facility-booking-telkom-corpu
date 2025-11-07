@@ -10,8 +10,8 @@ namespace Smarteye.RestAPI
     public abstract class RestAPIHandler : MonoBehaviour
     {
         public RestAPI restAPI;
-        public abstract void OnSuccessResult(JObject result);
-        public abstract void OnProtocolErr(JObject result);
+        public virtual void OnSuccessResult(JObject result) { }
+        public virtual void OnProtocolErr(JObject result) { }
 
         // Utility untuk format error agar lebih rapi
         protected string GetFormattedError(JObject errorObj)

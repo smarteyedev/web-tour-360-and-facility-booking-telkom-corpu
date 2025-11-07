@@ -7,7 +7,7 @@ namespace Smarteye.RestAPI
     [CreateAssetMenu]
     public class TargetAPIConfig : ScriptableObject
     {
-        public string url;
+        public string baseUrl;
         public List<endpointTarget> endpoints;
 
         [Serializable]
@@ -18,8 +18,14 @@ namespace Smarteye.RestAPI
         }
 
         [Header("Authorization")]
+        public bool isUsingBasicAuth;
         public string username;
         public string password;
+
+        [Space(10f)]
+        public bool isUsingBearerAuth;
+        public string jwtToken;
+
 
         public string GetEndpoint(string _title)
         {
