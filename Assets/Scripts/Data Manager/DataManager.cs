@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Smarteye.RestAPI;
 using System;
 
-namespace WebTourCorpu.DataManager
+namespace Tour360TelkomCorpu.DataManager
 {
   public class DataManager : RestAPIHandler
   {
@@ -47,6 +47,7 @@ namespace WebTourCorpu.DataManager
         {
           var response = JsonConvert.DeserializeObject<GqlResponse<TelkomCorpuAreas>>(result.ToString());
 
+          if (_telkomCorpuAreaOptionList.Count > 0) _telkomCorpuAreaOptionList.Clear();
           _telkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
 
           success = true;
@@ -65,6 +66,7 @@ namespace WebTourCorpu.DataManager
       onResult?.Invoke(success);
     }
 
+    // download request texture
     public IEnumerator RequestTelkomCorpuAreaOptionContent(
         Action<List<TelkomCorpuAreaCard>> onDone,
         Action<float> onProgress = null,
@@ -343,6 +345,7 @@ query GetTelkomCorpuArea($documentId: ID!) {
       }
 
       // save result
+      if (_telkomCorpuAreaOptionList.Count > 0) _telkomCorpuAreaOptionList.Clear();
       _locationDataList = result;
 
       Debug.Log($"Total location Data list: {_locationDataList.Count}");

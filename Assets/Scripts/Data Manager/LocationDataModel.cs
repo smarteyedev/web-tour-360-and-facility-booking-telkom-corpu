@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-namespace WebTourCorpu.DataManager
+namespace Tour360TelkomCorpu.DataManager
 {
     [Serializable]
     public class LocationDataModel

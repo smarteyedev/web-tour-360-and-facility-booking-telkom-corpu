@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-namespace WebTourCorpu.DataManager
+namespace Tour360TelkomCorpu.CanvasManager
 {
     public class LoadingScreenHandler : MonoBehaviour
     {

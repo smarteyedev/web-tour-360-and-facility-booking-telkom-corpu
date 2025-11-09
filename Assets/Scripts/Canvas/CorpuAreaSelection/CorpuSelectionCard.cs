@@ -1,0 +1,32 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Tour360TelkomCorpu.CanvasManager
+{
+    public class CorpuSelectionCard : MonoBehaviour
+    {
+        [Header("Component References")]
+        [SerializeField] private Image _imageBackgroundCard;
+        [SerializeField] private TextMeshProUGUI _textCardName;
+        [SerializeField] private TextMeshProUGUI _textAddress;
+        [SerializeField] private GameObject _iconLocker;
+        [SerializeField] private Button _buttonSelectCorpuArea;
+
+        public void SetupCard(Sprite bgCard, string cardName, string address, bool isOpenForVisitor, Action onClickAction)
+        {
+            _imageBackgroundCard.sprite = bgCard;
+            _textCardName.text = $"{cardName}";
+            _textAddress.text = $"{address}";
+
+            _iconLocker.SetActive(!isOpenForVisitor);
+            _buttonSelectCorpuArea.gameObject.SetActive(isOpenForVisitor);
+
+            _buttonSelectCorpuArea.onClick.RemoveAllListeners();
+            _buttonSelectCorpuArea.onClick.AddListener(() => onClickAction?.Invoke());
+        }
+    }
+}
