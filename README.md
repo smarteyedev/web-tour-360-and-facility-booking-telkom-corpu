@@ -29,6 +29,7 @@ This web tour is a representation of the [facilitycorpu.id](https://facilitycorp
 - Build Report Tool [3.13.3]
 - Colourful Hierarchy Category GameObject [1.2]
 - Sprite Editor [1.0.0]
+- UI Rounded Corners [3.5.0]
 
 ---
 
