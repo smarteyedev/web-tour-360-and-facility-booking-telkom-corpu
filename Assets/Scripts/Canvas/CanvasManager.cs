@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using Tour360TelkomCorpu.DataManager;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+using UnityEngine;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
@@ -13,6 +11,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         public LoadingScreenHandler loadingScreen;
         [SerializeField] private List<MonoBehaviour> _panelComponentList;
         private Dictionary<PanelType, IPanel> m_panelControllerDictionary = new Dictionary<PanelType, IPanel>();
+        private Dictionary<PanelType, IPanel> m_currentActivePanel = new Dictionary<PanelType, IPanel>();
 
         private void Awake()
         {
@@ -21,12 +20,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         private void Start()
         {
-            /* List<TelkomCorpuAreaCard> tesdata = new List<TelkomCorpuAreaCard>();
-            TelkomCorpuAreaCard d1 = new TelkomCorpuAreaCard();
-            d1.name = $"telkom samarinda";
-            tesdata.Add(d1);
 
-            OpenPanelCorpuAreaSelection(IPanel.PanelType.CorpuAreaSelection, tesdata, (documentId) => Debug.Log($"PanelCorpuAreaSelection: masuk ke selection, nama area : {documentId}")); */
         }
 
         private void SetupPanelDict()
@@ -69,18 +63,40 @@ namespace Tour360TelkomCorpu.CanvasManager
             if (data == null)
             {
 #if UNITY_EDITOR
-                Debug.Log($"data is null, please input data");
+                Debug.Log($"CanvasManager: data is null, please input data");
 #endif
                 return;
             }
 
+            CloseAllPanel();
+
             if (m_panelControllerDictionary.TryGetValue(panelType, out var panel))
             {
                 panel.ShowPanel(data, callback);
+
+                m_currentActivePanel.Add(panelType, panel);
+                Debug.Log($"CanvasManager: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
             }
             else
             {
                 Debug.LogError($"CanvasManager: panel {panelType.ToString()} is not registered");
+            }
+        }
+
+        public void CloseAllPanel()
+        {
+            if (m_currentActivePanel.Count > 0)
+            {
+                // hide active panel
+                foreach (var p in m_currentActivePanel.ToList())
+                {
+                    p.Value.HidePanel();
+                    m_currentActivePanel.Remove(p.Key);
+                }
+
+#if UNITY_EDITOR
+                Debug.Log($"CanvasManager: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
+#endif
             }
         }
     }

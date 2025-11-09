@@ -24,7 +24,7 @@ namespace Tour360TelkomCorpu.TourManager
 
         public void StartApplication()
         {
-            Debug.Log($"TourManager: Starting...");
+            Debug.Log($"TourManager: Starting App...");
 
             StartCoroutine(_canvasManager.loadingScreen.LoadingScreenForApiProcess(
                 _loadingProcess: _dataManager.GetTelkomCorpuAreaOptionData,
@@ -67,12 +67,21 @@ namespace Tour360TelkomCorpu.TourManager
                 _onComplete: () =>
                 {
                     // loading process complete
+                    _canvasManager.CloseAllPanel();
+
+                    SetupLocationAsset(_currentLocationIndex);
                 },
                 _onError: () =>
                 {
                     // loading process error when web request fail
                 }
             ));
+        }
+
+        public void OnChangeLocationByDocumentId(string documentId)
+        {
+            int targetIndex = _dataManager.GenerateLocationIndex(documentId);
+            SetupLocationAsset(targetIndex);
         }
 
         public void SetupLocationAsset(int targetIndex)
@@ -83,10 +92,25 @@ namespace Tour360TelkomCorpu.TourManager
                 {
                     _locationData = data;
                     _currentLocationIndex = targetIndex;
+#if UNITY_EDITOR
+                    Debug.Log($"TourManager: Already Get Location {data.name} asset");
+#endif
                 },
                 (progress) => {/* Debug.Log($"{progress}") */},
                 forceRedownload: false
             ));
+        }
+
+        public void NextLocation()
+        {
+            if (_currentLocationIndex < _dataManager.GetLocationDataListCount() - 1)
+                SetupLocationAsset(_currentLocationIndex + 1);
+        }
+
+        public void PreviousLocation()
+        {
+            if (_currentLocationIndex > 0)
+                SetupLocationAsset(_currentLocationIndex - 1);
         }
     }
 }

@@ -12,7 +12,6 @@ namespace Tour360TelkomCorpu.CanvasManager
     {
         [Space(10f)]
         [Header("Corpu Area Selection Configuration")]
-        // [SerializeField] private List<TelkomCorpuAreaCard> sampleDatas; //! should delete
 
         [Header("Carousel Settings")]
         [SerializeField] private float _swipeThreshold = 50f;
@@ -39,11 +38,6 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             if (!_scrollRect)
                 _scrollRect = GetComponentInChildren<ScrollRect>();
-        }
-
-        protected override void Start()
-        {
-
         }
 
         protected override void ShowPanel(List<TelkomCorpuAreaCard> cardData, Action<string> callbackUsingDocumentId = null)

@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Smarteye.RestAPI;
 using System;
+using System.Linq;
 
 namespace Tour360TelkomCorpu.DataManager
 {
@@ -118,7 +119,7 @@ namespace Tour360TelkomCorpu.DataManager
           {
             if (fails != null && fails.Count > 0)
             {
-              foreach (var f in fails) Debug.LogWarning($"Download fail: {f}");
+              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
             }
             finished = true;
           }
@@ -345,10 +346,12 @@ query GetTelkomCorpuArea($documentId: ID!) {
       }
 
       // save result
-      if (_telkomCorpuAreaOptionList.Count > 0) _telkomCorpuAreaOptionList.Clear();
+      if (_locationDataList.Count > 0) _locationDataList.Clear();
       _locationDataList = result;
 
-      Debug.Log($"Total location Data list: {_locationDataList.Count}");
+#if UNITY_EDITOR
+      Debug.Log($"DataManager: Total location Data list: {_locationDataList.Count}");
+#endif
     }
 
     public IEnumerator RequestLocationDataContentByIndex(
@@ -365,20 +368,27 @@ query GetTelkomCorpuArea($documentId: ID!) {
         yield break;
       }
 
-      var locationTarget = _locationDataList[locationIndex];
+      LocationDataModel locationTarget = _locationDataList[locationIndex];
+#if UNITY_EDITOR
+      Debug.Log($"DataManager: Checking location {locationTarget.name} asset...");
+#endif
 
       var downloadTargets = new Dictionary<Action<Texture2D>, string>();
       bool needDownload = forceRedownload ? true : !locationTarget.IsImageAssetDownloaded();
-      var pairs = locationTarget.DownloadAssetList(restAPI.targetAPIConfig.baseUrl);
-      foreach (var kv in pairs)
+
+      if (needDownload)
       {
-        downloadTargets[kv.Key] = kv.Value;
+        var pairs = locationTarget.DownloadAssetList(restAPI.targetAPIConfig.baseUrl);
+        foreach (var kv in pairs)
+        {
+          downloadTargets[kv.Key] = kv.Value;
+        }
       }
 
       if (downloadTargets.Count == 0)
       {
         onProgress?.Invoke(1f);
-        onDone?.Invoke(null);
+        onDone?.Invoke(locationTarget);
         yield break;
       }
 
@@ -394,7 +404,7 @@ query GetTelkomCorpuArea($documentId: ID!) {
           {
             if (fails != null && fails.Count > 0)
             {
-              foreach (var f in fails) Debug.LogWarning($"Download fail: {f}");
+              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
             }
             finished = true;
           }
@@ -404,6 +414,17 @@ query GetTelkomCorpuArea($documentId: ID!) {
 
       onProgress?.Invoke(1f);
       onDone?.Invoke(locationTarget);
+    }
+
+    public int GenerateLocationIndex(string documentId)
+    {
+      var l = _locationDataList.First((x) => x.documentId == documentId);
+      return _locationDataList.IndexOf(l);
+    }
+
+    public int GetLocationDataListCount()
+    {
+      return _locationDataList.Count;
     }
   }
 }

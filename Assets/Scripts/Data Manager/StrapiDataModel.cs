@@ -200,7 +200,8 @@ namespace Tour360TelkomCorpu.DataManager
 
         public static bool IsNeedToDownload(ImageField targetImage)
         {
-            return (targetImage.textureImage == null && !string.IsNullOrEmpty(targetImage.url));
+            // Debug.Log($"try to check image: {targetImage.url}");
+            return targetImage != null && targetImage.textureImage == null && !string.IsNullOrEmpty(targetImage.url);
         }
     }
 

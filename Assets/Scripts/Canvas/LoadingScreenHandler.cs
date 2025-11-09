@@ -31,6 +31,8 @@ namespace Tour360TelkomCorpu.CanvasManager
             bool isSuccess = false;
             yield return StartCoroutine(_loadingProcess.Invoke(success => isSuccess = success, _documentId));
 
+            _onComplete?.Invoke();
+
             // Simulasi progres visual hingga mendekati 100%
             while (_visualProgress < 0.95f)
             {
@@ -42,12 +44,10 @@ namespace Tour360TelkomCorpu.CanvasManager
             if (isSuccess)
             {
                 _loadingBar.value = 1f;
-                yield return new WaitForSeconds(0.5f);
+                // yield return new WaitForSeconds(0.5f); // jeda
 
                 _screenPanel.SetActive(false);
                 _loadingBar.value = 0f;
-
-                _onComplete?.Invoke();
             }
             else
             {

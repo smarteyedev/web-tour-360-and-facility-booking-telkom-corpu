@@ -79,7 +79,6 @@ namespace Tour360TelkomCorpu.DataManager
 
         public bool IsImageAssetDownloaded()
         {
-
             if (locationType == LocationType.FACILITY)
             {
                 return background_360_image.textureImage != null && thumbnail_image != null &&
@@ -100,6 +99,17 @@ namespace Tour360TelkomCorpu.DataManager
                 targets.Add(tex => background_360_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, background_360_image.url));
             }
 
+            if (navigations.Count > 0)
+            {
+                foreach (var nav in navigations)
+                {
+                    if (ModelHandler.IsNeedToDownload(nav.hotspot_configuration.hotspot_image))
+                    {
+                        targets.Add(tex => nav.hotspot_configuration.hotspot_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, nav.hotspot_configuration.hotspot_image.url));
+                    }
+                }
+            }
+
             if (locationType == LocationType.FACILITY)
             {
                 if (ModelHandler.IsNeedToDownload(thumbnail_image))
@@ -112,35 +122,36 @@ namespace Tour360TelkomCorpu.DataManager
                     targets.Add(tex => facility_detail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, facility_detail_image.url));
                 }
 
-                foreach (var content in gallery)
+                if (gallery.Count > 0)
                 {
-                    foreach (var item in content.content_images)
+                    foreach (var content in gallery)
                     {
-                        if (ModelHandler.IsNeedToDownload(item))
+                        foreach (var item in content.content_images)
                         {
-                            targets.Add(tex => item.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, item.url));
+                            if (ModelHandler.IsNeedToDownload(item))
+                            {
+                                targets.Add(tex => item.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, item.url));
+                            }
+                        }
+
+                        if (ModelHandler.IsNeedToDownload(content.hotspot_configuration.hotspot_image))
+                        {
+                            targets.Add(tex => content.hotspot_configuration.hotspot_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, content.hotspot_configuration.hotspot_image.url));
                         }
                     }
                 }
             }
-
-
-            foreach (var nav in navigations)
+            else
             {
-                if (ModelHandler.IsNeedToDownload(nav.hotspot_configuration.hotspot_image))
+                if (ModelHandler.IsNeedToDownload(maps_image))
                 {
-                    targets.Add(tex => nav.hotspot_configuration.hotspot_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, nav.hotspot_configuration.hotspot_image.url));
+                    targets.Add(tex => maps_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, maps_image.url));
                 }
-            }
 
-            if (ModelHandler.IsNeedToDownload(maps_image))
-            {
-                targets.Add(tex => maps_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, maps_image.url));
-            }
-
-            if (ModelHandler.IsNeedToDownload(description_image))
-            {
-                targets.Add(tex => description_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, description_image.url));
+                if (ModelHandler.IsNeedToDownload(description_image))
+                {
+                    targets.Add(tex => description_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, description_image.url));
+                }
             }
 
             return targets;
