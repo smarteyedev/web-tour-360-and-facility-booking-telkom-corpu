@@ -12,6 +12,7 @@ namespace Tour360TelkomCorpu.TourManager
     {
         [SerializeField] private int _currentLocationIndex = 0;
         [SerializeField] private LocationDataModel _locationData = new LocationDataModel();
+        [SerializeField] private List<int> _visitedLocationIndexList = new List<int>();
 
         [Header("Component References")]
         [SerializeField] private DataManager _dataManager;
@@ -90,11 +91,21 @@ namespace Tour360TelkomCorpu.TourManager
                 locationIndex: targetIndex,
                 onDone: (data) =>
                 {
-                    _locationData = data;
-                    _currentLocationIndex = targetIndex;
+                    if (data != null)
+                    {
+                        _locationData = data;
+                        _currentLocationIndex = targetIndex;
+
+                        if (_visitedLocationIndexList.Count == 0 || _currentLocationIndex != _visitedLocationIndexList[_visitedLocationIndexList.Count - 1])
+                            _visitedLocationIndexList.Add(_currentLocationIndex);
 #if UNITY_EDITOR
-                    Debug.Log($"TourManager: Already Get Location {data.name} asset");
+                        Debug.Log($"TourManager: Already Get Location {data.name} asset");
 #endif
+                    }
+                    else
+                    {
+                        Debug.Log($"TourManager: target index is out of target");
+                    }
                 },
                 (progress) => {/* Debug.Log($"{progress}") */},
                 forceRedownload: false
@@ -103,14 +114,16 @@ namespace Tour360TelkomCorpu.TourManager
 
         public void NextLocation()
         {
-            if (_currentLocationIndex < _dataManager.GetLocationDataListCount() - 1)
-                SetupLocationAsset(_currentLocationIndex + 1);
+            SetupLocationAsset(_currentLocationIndex + 1);
         }
 
         public void PreviousLocation()
         {
-            if (_currentLocationIndex > 0)
-                SetupLocationAsset(_currentLocationIndex - 1);
+            if (_visitedLocationIndexList.Count > 1)
+            {
+                _visitedLocationIndexList.RemoveAt(_visitedLocationIndexList.Count - 1);
+                SetupLocationAsset(_visitedLocationIndexList[_visitedLocationIndexList.Count - 1]);
+            }
         }
     }
 }

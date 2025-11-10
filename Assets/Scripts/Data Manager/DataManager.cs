@@ -361,7 +361,7 @@ query GetTelkomCorpuArea($documentId: ID!) {
       bool forceRedownload = false
     )
     {
-      if (_locationDataList == null)
+      if (_locationDataList == null || locationIndex > _locationDataList.Count - 1)
       {
         onProgress?.Invoke(1f);
         onDone?.Invoke(null);
@@ -420,11 +420,6 @@ query GetTelkomCorpuArea($documentId: ID!) {
     {
       var l = _locationDataList.First((x) => x.documentId == documentId);
       return _locationDataList.IndexOf(l);
-    }
-
-    public int GetLocationDataListCount()
-    {
-      return _locationDataList.Count;
     }
   }
 }
