@@ -12,6 +12,7 @@ namespace Tour360TelkomCorpu.TourManager
     {
         [SerializeField] private int _currentLocationIndex = 0;
         [SerializeField] private LocationDataModel _locationData = new LocationDataModel();
+        [SerializeField] private List<int> _visitedLocationIndexList = new List<int>();
 
         [Header("Component References")]
         [SerializeField] private DataManager _dataManager;
@@ -92,6 +93,9 @@ namespace Tour360TelkomCorpu.TourManager
                 {
                     _locationData = data;
                     _currentLocationIndex = targetIndex;
+
+                    if (_visitedLocationIndexList.Count == 0 || _currentLocationIndex != _visitedLocationIndexList[_visitedLocationIndexList.Count - 1])
+                        _visitedLocationIndexList.Add(_currentLocationIndex);
 #if UNITY_EDITOR
                     Debug.Log($"TourManager: Already Get Location {data.name} asset");
 #endif
@@ -110,7 +114,12 @@ namespace Tour360TelkomCorpu.TourManager
         public void PreviousLocation()
         {
             if (_currentLocationIndex > 0)
-                SetupLocationAsset(_currentLocationIndex - 1);
+            {
+                /* Debug.Log($"Last location value {_visitLocationHistory[_visitLocationHistory.Count - 2]}");
+                Debug.Log($"Last Index {_visitLocationHistory.Count - 2}"); */
+                _visitedLocationIndexList.RemoveAt(_visitedLocationIndexList.Count - 1);
+                SetupLocationAsset(_visitedLocationIndexList[_visitedLocationIndexList.Count - 1]);
+            }
         }
     }
 }
