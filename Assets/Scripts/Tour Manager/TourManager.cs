@@ -113,10 +113,8 @@ namespace Tour360TelkomCorpu.TourManager
 
         public void PreviousLocation()
         {
-            if (_currentLocationIndex > 0)
+            if (_visitedLocationIndexList.Count > 1)
             {
-                /* Debug.Log($"Last location value {_visitLocationHistory[_visitLocationHistory.Count - 2]}");
-                Debug.Log($"Last Index {_visitLocationHistory.Count - 2}"); */
                 _visitedLocationIndexList.RemoveAt(_visitedLocationIndexList.Count - 1);
                 SetupLocationAsset(_visitedLocationIndexList[_visitedLocationIndexList.Count - 1]);
             }
