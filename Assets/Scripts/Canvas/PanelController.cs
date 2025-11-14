@@ -15,6 +15,18 @@ namespace Tour360TelkomCorpu.CanvasManager
         PanelType panelIdentity();
     }
 
+    public class FormatPanelLocationMapsAsset
+    {
+        public Sprite mapsSprite;
+        public Sprite DescriptionSprite;
+    }
+
+    public class FormatPanelDescriptionAsset
+    {
+        public string descriptionText;
+        public Sprite facilityDetailSprite;
+    }
+
     public abstract class PanelController<TData, Taction> : MonoBehaviour, IPanel
     {
         [Header("PanelController Base")]
@@ -53,6 +65,6 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             HidePanel();
         }
-        protected abstract void HidePanel();
+        public abstract void HidePanel();
     }
 }

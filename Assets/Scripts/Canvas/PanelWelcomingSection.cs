@@ -21,7 +21,7 @@ namespace Tour360TelkomCorpu.CanvasManager
             _buttonStart.onClick.AddListener(() => callbackUsingDocumentId?.Invoke(""));
         }
 
-        protected override void HidePanel()
+        public override void HidePanel()
         {
             _panelContainer.gameObject.SetActive(false);
         }

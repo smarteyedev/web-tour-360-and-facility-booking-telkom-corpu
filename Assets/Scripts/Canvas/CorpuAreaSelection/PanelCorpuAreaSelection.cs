@@ -30,7 +30,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private Button _nextButton;
         [SerializeField] private RectTransform _rectContentParent;
         [SerializeField] private CorpuSelectionCard _prefabCorpuSelectionCard;
-        private readonly List<CorpuSelectionCard> m_spawnedCard = new List<CorpuSelectionCard>();
+        private readonly List<CorpuSelectionCard> m_cardPooling = new List<CorpuSelectionCard>();
 
         private Coroutine m_snapRoutine;
 
@@ -49,14 +49,14 @@ namespace Tour360TelkomCorpu.CanvasManager
                 TelkomCorpuAreaCard D = cardData[i];
 
                 CorpuSelectionCard card;
-                if (i < m_spawnedCard.Count)
+                if (i < m_cardPooling.Count)
                 {
-                    card = m_spawnedCard[i];
+                    card = m_cardPooling[i];
                 }
                 else
                 {
                     card = Instantiate(_prefabCorpuSelectionCard, _rectContentParent, false);
-                    if (i >= m_spawnedCard.Count) m_spawnedCard.Add(card);
+                    if (i >= m_cardPooling.Count) m_cardPooling.Add(card);
                 }
 
                 if (!card.gameObject.activeSelf) card.gameObject.SetActive(true);
@@ -70,13 +70,13 @@ namespace Tour360TelkomCorpu.CanvasManager
                 if (card.transform.GetSiblingIndex() != i) card.transform.SetSiblingIndex(i);
             }
 
-            for (int i = cardData.Count; i < m_spawnedCard.Count; i++)
-                if (m_spawnedCard[i] && m_spawnedCard[i].gameObject.activeSelf) m_spawnedCard[i].gameObject.SetActive(false);
+            for (int i = cardData.Count; i < m_cardPooling.Count; i++)
+                if (m_cardPooling[i] && m_cardPooling[i].gameObject.activeSelf) m_cardPooling[i].gameObject.SetActive(false);
 
             SetupCarousel();
         }
 
-        protected override void HidePanel()
+        public override void HidePanel()
         {
             _panelContainer.gameObject.SetActive(false);
         }
