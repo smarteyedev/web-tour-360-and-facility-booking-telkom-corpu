@@ -14,6 +14,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private TextMeshProUGUI _textCardName;
         [SerializeField] private TextMeshProUGUI _textAddress;
         [SerializeField] private GameObject _iconLocker;
+        [SerializeField] private GameObject _iconExplor;
         [SerializeField] private Button _buttonSelectCorpuArea;
 
         public void SetupCard(Sprite bgCard, string cardName, string address, bool isOpenForVisitor, Action onClickAction)
@@ -23,10 +24,14 @@ namespace Tour360TelkomCorpu.CanvasManager
             _textAddress.text = $"{address}";
 
             _iconLocker.SetActive(!isOpenForVisitor);
-            _buttonSelectCorpuArea.gameObject.SetActive(isOpenForVisitor);
+            _iconExplor.gameObject.SetActive(isOpenForVisitor);
+            _buttonSelectCorpuArea.interactable = isOpenForVisitor;
 
-            _buttonSelectCorpuArea.onClick.RemoveAllListeners();
-            _buttonSelectCorpuArea.onClick.AddListener(() => onClickAction?.Invoke());
+            if (isOpenForVisitor)
+            {
+                _buttonSelectCorpuArea.onClick.RemoveAllListeners();
+                _buttonSelectCorpuArea.onClick.AddListener(() => onClickAction?.Invoke());
+            }
         }
     }
 }
