@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Tour360TelkomCorpu.DataManager
 {
     [Serializable]
-    public class LocationDataModel
+    public class    LocationDataModel
     {
         public string name;
         public string documentId;

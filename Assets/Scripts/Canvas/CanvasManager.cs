@@ -3,11 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
     public class CanvasManager : MonoBehaviour
     {
+        [Header("Component Menu Bar")]
+        [SerializeField] private TextMeshProUGUI _textLocationName;
+        [SerializeField] private Button _buttonOpenPanelInformation;
+
         public LoadingScreenHandler loadingScreen;
         [SerializeField] private List<MonoBehaviour> _panelComponentList;
         private Dictionary<PanelType, IPanel> m_panelControllerDictionary = new Dictionary<PanelType, IPanel>();
@@ -98,6 +104,12 @@ namespace Tour360TelkomCorpu.CanvasManager
                 Debug.Log($"CanvasManager: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
 #endif
             }
+        }
+
+        public void SetLocationPlank(string locationName, Action onClickPanelInfo)
+        {
+            _textLocationName.text = locationName;
+            _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
         }
     }
 }
