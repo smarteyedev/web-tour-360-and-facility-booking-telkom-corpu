@@ -220,9 +220,10 @@ MonoBehaviour:
   onHoverExit:
     m_PersistentCalls:
       m_Calls: []
-  hotspotType: 2
+  hotspotType: 4
   _imageOutline: {fileID: 2729680626883371867}
   _imageBgHotspotName: {fileID: 1927905271345404713}
+  _rectTransform: {fileID: 9178263587849517368}
 --- !u!1 &8469724873488165601
 GameObject:
   m_ObjectHideFlags: 0

@@ -207,6 +207,7 @@ MonoBehaviour:
   hotspotType: 3
   _imageOutline: {fileID: 7357729865438047201}
   _imageBgHotspotName: {fileID: 1780597115471886609}
+  _rectTransform: {fileID: 8829498411017322964}
 --- !u!1 &3493289458157274120
 GameObject:
   m_ObjectHideFlags: 0

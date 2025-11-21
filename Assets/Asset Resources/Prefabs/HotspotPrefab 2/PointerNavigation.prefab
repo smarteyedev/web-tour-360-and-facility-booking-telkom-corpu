@@ -70,9 +70,10 @@ MonoBehaviour:
   onHoverExit:
     m_PersistentCalls:
       m_Calls: []
-  hotspotType: 1
+  hotspotType: 2
   _imageOutline: {fileID: 2330737824644360765}
   _imageBgHotspotName: {fileID: 1871970294785379407}
+  _rectTransform: {fileID: 2657035884132494628}
 --- !u!1 &7070491931847688051
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,7 +214,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: Kawasan R - Gd. Amoeba Lounge
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -23,7 +23,7 @@ namespace Tour360TelkomCorpu.SphereController
             if (useFadeTransition)
             {
                 float blendValue = _Material.GetFloat("_Blend");
-                Debug.Log("Current Blend Value: " + blendValue);
+                //Debug.Log("Current Blend Value: " + blendValue);
 
                 bool usingTexture = blendValue <= 0.5f;
                 float endBlend = usingTexture ? 1 : 0;

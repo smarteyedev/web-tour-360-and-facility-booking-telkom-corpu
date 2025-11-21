@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.Events;
 using DG.Tweening;
 
 namespace Tour360TelkomCorpu.HotspotHandler
@@ -14,188 +11,292 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
     public class HotspotHandler : ButtonInteractive
     {
-       
+        [Serializable]
+        public enum HotspotType
+        {
+            BasicNavigation = 1,
+            PointerNavigation = 2,
+            OpenPanelNavigation = 3,
+            OpenPanelGallery = 4
+        }
+
+        // Static dictionary: dibuat sekali saja, dipakai semua instance
+        private static readonly Dictionary<HotspotType, Color> HotspotColors = new()
+        {
+            { HotspotType.BasicNavigation, Color.green },
+            { HotspotType.PointerNavigation, Color.cyan },
+            { HotspotType.OpenPanelNavigation, Color.magenta },
+            { HotspotType.OpenPanelGallery, Color.yellow }
+        };
+
         [Header("Hotspot Handler Component")]
-        public TargetHotspot hotspotType;
+        public HotspotType hotspotType;
 
-        private GameObject m_targetPosition;
         [SerializeField] private Image _imageOutline;
-
         [SerializeField] private Image _imageBgHotspotName;
+        [SerializeField] private RectTransform _rectTransform;
 
+        private GameObject _targetPosition;
+        private Camera _cam;
+
+        // state tracking
+        private bool _isTracking;
+
+        // cache tween supaya bisa di-Kill
+        private Tween _outlineTween;
+        private Tween _hoverTween;
+
+
+        #region Unity Lifecycle
+
+        private void Awake()
+        {
+            if (_rectTransform == null)
+                _rectTransform = GetComponent<RectTransform>();
+
+            _cam = Camera.main;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+
+            //OutlineAnimation();
+            //HoverAnimation(false);
+
+            //onHoverExit.AddListener(() => HoverAnimation(false));
+            //onHoverEnter.AddListener(() => HoverAnimation(true));
+        }
+
+        private void LateUpdate()
+        {
+            //if (_isTracking)
+            //    TrackingPosition();
+        }
+
+        #endregion
+
+
+        #region Public API
 
         public void SetupHotspot(string hotspotName, Sprite iconSprite, Action action, Vector3 position)
         {
-    
-           
             _imageButton.sprite = iconSprite;
             _textButton.text = hotspotName;
 
-            onLeftMouseDown.AddListener(() => action?.Invoke());
+            // penting untuk pooling:
+            onLeftMouseDown.RemoveAllListeners();
 
-            InstantiateTargetPosition(position);
-            TrackingPosition();
+            if (action != null)
+                onLeftMouseDown.AddListener(() => action());
 
+            //InstantiateTargetPosition(position);
+
+            // tracking hanya aktif kalau target berhasil dibuat
+            //_isTracking = _targetPosition != null;
         }
+
+        /// <summary>
+        /// Matikan hotspot: berhenti tracking, matikan target world & UI,
+        /// tapi TIDAK destroy target hotspot.
+        /// </summary>
+        public void StopHotspot()
+        {
+            _isTracking = false;
+
+            if (_targetPosition != null)
+                _targetPosition.SetActive(false);
+
+            if (_rectTransform != null)
+                _rectTransform.gameObject.SetActive(false);
+
+            // ⬅️ Ini penting untuk pooling:
+            gameObject.SetActive(false);
+        }
+
+        #endregion
+
+
+        #region World Target & Tracking
 
         private void InstantiateTargetPosition(Vector3 position)
         {
-
-            if (m_targetPosition != null && m_targetPosition.scene.IsValid())
+            // pastikan camera ada
+            if (_cam == null)
             {
-                Debug.Log($"⚠️ Target {hotspotType} sudah dibuat, lewati!");
-                return;
+                _cam = Camera.main;
+                if (_cam == null)
+                {
+                    Debug.LogError("❌ MainCamera tidak ditemukan di scene!");
+                    return;
+                }
             }
 
-            Camera cam = Camera.main;
-            if (cam == null)
-            {
-                Debug.LogError("❌ MainCamera tidak ditemukan di scene!");
-                return;
-            }
-
-            var hotspotColors = new Dictionary<TargetHotspot, Color>
-        {
-            { TargetHotspot.BUILDING, Color.green },
-            { TargetHotspot.FACILITY, Color.cyan },
-            { TargetHotspot.PANEL_NAVIGATION, Color.magenta },
-            { TargetHotspot.PANEL_GALLERY, Color.yellow }
-        };
-
-            Vector3 pos = position;
-            Color color = hotspotColors.ContainsKey(hotspotType) ? hotspotColors[hotspotType] : Color.white;
-
+            // hitung world position baru dari parameter 'position'
             float distanceFromCamera = 2f;
 
-            Vector3 direction = cam.transform.forward;
+            Vector3 pos = position;
+            Vector3 direction = _cam.transform.forward;
             Vector3 offset = Quaternion.Euler(
                 (pos.y - 0.5f) * 180f,
                 (pos.x - 0.5f) * 360f,
-                1) * direction;
+                1f) * direction;
 
-            Vector3 spawnPos = cam.transform.position + offset * distanceFromCamera;
+            Vector3 spawnPos = _cam.transform.position + offset * distanceFromCamera;
 
-            GameObject worldTarget = new GameObject("Target Position");
-            worldTarget.transform.position = spawnPos;
-            worldTarget.transform.rotation = Quaternion.LookRotation(cam.transform.position - spawnPos);
+            // ⚠️ Jika target SUDAH ada → cukup update posisinya kalau BERBEDA + hidupkan lagi
+            if (_targetPosition != null && _targetPosition.scene.IsValid())
+            {
+                Transform t = _targetPosition.transform;
 
-            m_targetPosition = worldTarget;
+                if (t.position != spawnPos)
+                {
+                    t.position = spawnPos;
+                    t.rotation = Quaternion.LookRotation(_cam.transform.position - spawnPos);
+                }
 
-            var s = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            s.transform.SetParent(worldTarget.transform, false);
-            s.transform.localPosition = Vector3.zero;
-            s.transform.localScale = Vector3.one * 0.05f;
-            s.GetComponent<Renderer>().material.color = color;
+                if (!_targetPosition.activeSelf)
+                    _targetPosition.SetActive(true);
 
-            Debug.Log($"✅ Dibuat GameObject baru untuk target {hotspotType} di posisi {spawnPos}");
+                return; // tidak buat GameObject baru
+            }
+
+            // ✅ Kalau target BELUM ada → buat GameObject baru
+            _targetPosition = new GameObject("Target Position");
+            Transform targetTransform = _targetPosition.transform;
+            targetTransform.position = spawnPos;
+            targetTransform.rotation = Quaternion.LookRotation(_cam.transform.position - spawnPos);
+
+            Color color = HotspotColors.TryGetValue(hotspotType, out var c)
+                ? c
+                : Color.white;
+
+            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.SetParent(targetTransform, false);
+            sphere.transform.localPosition = Vector3.zero;
+            sphere.transform.localScale = Vector3.one * 0.05f;
+
+            var renderer = sphere.GetComponent<Renderer>();
+            if (renderer != null)
+                renderer.material.color = color;
         }
 
         private void TrackingPosition()
         {
-            if (m_targetPosition == null || Camera.main == null)
-                return;
-
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(m_targetPosition.transform.position);
-            RectTransform rect = GetComponent<RectTransform>();
-
-            if (screenPos.z < 0)
+            if (_rectTransform == null)
             {
-                if (rect != null)
-                    rect.gameObject.SetActive(false);
+                _isTracking = false;
                 return;
             }
 
-            if (rect != null)
+            if (_targetPosition == null || _cam == null)
             {
-                rect.gameObject.SetActive(true);
-                rect.position = screenPos;
+                if (_rectTransform.gameObject.activeSelf)
+                    _rectTransform.gameObject.SetActive(false);
+
+                _isTracking = false;
+                return;
             }
+
+            Vector3 screenPos = _cam.WorldToScreenPoint(_targetPosition.transform.position);
+
+            /* if (screenPos.z <= 0f)
+            {
+                if (_rectTransform.gameObject.activeSelf)
+                    _rectTransform.gameObject.SetActive(false);
+                return;
+            }
+
+            if (!_rectTransform.gameObject.activeSelf)
+                _rectTransform.gameObject.SetActive(true); */
+
+            _rectTransform.position = screenPos;
         }
-  
+
+        #endregion
+
+
+        #region Animations
+
         private void OutlineAnimation()
         {
-           
+            _outlineTween?.Kill();
+
+            if (_imageOutline == null)
+                return;
 
             float startRingScale = 1.0f;
             float targetRingScale = 1.3f;
             float ringFadeDuration = 0.5f;
             float ringDelay = 0.2f;
 
-
-            if (hotspotType == TargetHotspot.BUILDING)
+            if (hotspotType == HotspotType.BasicNavigation)
             {
-                _imageOutline.color = new Color(1, 1, 1, 1);
-                _imageOutline.DOFade(0f, 1f)
+                _imageOutline.color = new Color(1f, 1f, 1f, 1f);
+                _outlineTween = _imageOutline
+                    .DOFade(0f, 1f)
                     .SetLoops(-1, LoopType.Yoyo)
                     .SetEase(Ease.InOutSine);
             }
             else
             {
-                Sequence ringSequence = DOTween.Sequence();
-                ringSequence.Append(_imageOutline.rectTransform.DOScale(targetRingScale, ringFadeDuration))
-                                .Join(_imageOutline.DOFade(1f, ringFadeDuration))
-                                .SetEase(Ease.OutQuad);
+                RectTransform outlineRect = _imageOutline.rectTransform;
 
-                ringSequence.Append(_imageOutline.DOFade(0f, ringFadeDuration))
-                            .SetEase(Ease.InQuad);
+                var seq = DOTween.Sequence();
+                seq.Append(outlineRect.DOScale(targetRingScale, ringFadeDuration))
+                   .Join(_imageOutline.DOFade(1f, ringFadeDuration))
+                   .SetEase(Ease.OutQuad)
+                   .Append(_imageOutline.DOFade(0f, ringFadeDuration))
+                   .SetEase(Ease.InQuad)
+                   .AppendCallback(() =>
+                   {
+                       outlineRect.localScale = Vector3.one * startRingScale;
+                       Color col = _imageOutline.color;
+                       _imageOutline.color = new Color(col.r, col.g, col.b, 0f);
+                   })
+                   .AppendInterval(ringDelay)
+                   .SetLoops(-1);
 
-                ringSequence.AppendCallback(() =>
-                {
-                    _imageOutline.rectTransform.localScale = Vector3.one * startRingScale;
-                    _imageOutline.color = new Color(_imageOutline.color.r, _imageOutline.color.g, _imageOutline.color.b, 0f);
-                });
-
-                ringSequence.AppendInterval(ringDelay);
-                ringSequence.SetLoops(-1);
-               
+                _outlineTween = seq;
             }
-            
-           
         }
+
         private void HoverAnimation(bool isHover)
         {
+            _hoverTween?.Kill();
+
             float hoverScale = 1.2f;
             float scaleDuration = 0.2f;
             float textFadeDuration = 0.3f;
             Vector3 originalScale = Vector3.one;
 
-            Sequence ringSequence = DOTween.Sequence();
-
             if (isHover)
             {
-
                 if (_imageBgHotspotName != null)
                 {
                     _imageBgHotspotName.gameObject.SetActive(true);
-                    _imageBgHotspotName.DOFade(1f, textFadeDuration);
+                    _hoverTween = _imageBgHotspotName
+                        .DOFade(1f, textFadeDuration);
                 }
 
                 transform.DOScale(originalScale * hoverScale, scaleDuration).SetEase(Ease.OutBack);
             }
             else
             {
-                ringSequence.Kill();
-
-
                 if (_imageBgHotspotName != null)
                 {
-                    _imageBgHotspotName.DOFade(0f, textFadeDuration).OnComplete(() =>
-                    {
-                        _imageBgHotspotName.gameObject.SetActive(false);
-                    });
+                    _hoverTween = _imageBgHotspotName
+                        .DOFade(0f, textFadeDuration)
+                        .OnComplete(() =>
+                        {
+                            _imageBgHotspotName.gameObject.SetActive(false);
+                        });
                 }
 
                 transform.DOScale(originalScale, scaleDuration).SetEase(Ease.InBack);
             }
         }
 
-        protected override void Start()
-        {
-            base.Start();
-            OutlineAnimation();
-            HoverAnimation(false);
-            onHoverExit.AddListener(() => HoverAnimation(false));
-            onHoverEnter.AddListener(() => HoverAnimation(true));
-        }
+        #endregion
     }
 }

@@ -10,8 +10,6 @@ namespace Tour360TelkomCorpu.TourManager
     using Tour360TelkomCorpu.CanvasManager;
     using Tour360TelkomCorpu.HotspotHandler;
     using Tour360TelkomCorpu.SphereController;
-    using Unity.VisualScripting.Dependencies.NCalc;
-    using Unity.VisualScripting;
 
     public class TourManager : MonoBehaviour
     {
@@ -20,10 +18,12 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private List<int> _visitedLocationIndexList = new List<int>();
 
         [Header("Component References")]
-        [SerializeField] private DataManager _dataManager;
-        [SerializeField] private CanvasManager _canvasManager;
+        [SerializeField]
+        private DataManager _dataManager;
+        [SerializeField]
+        private CanvasManager _canvasManager;
         [SerializeField] private List<HotspotHandler> _hotspotPrefab;
-        [SerializeField] private List<HotspotHandler> m_hotspotPooling;
+        private  Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>> m_hotspotPooling = new Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>>();
         [SerializeField] private SphereController _SphereController;
 
         private void Start()
@@ -97,6 +97,10 @@ namespace Tour360TelkomCorpu.TourManager
         {
             StartCoroutine(_dataManager.RequestLocationDataContentByIndex(
                 locationIndex: targetIndex,
+                onValidStart: () =>
+                {
+                    HideHotspot();
+                },
                 onDone: (data) =>
                 {
                     if (data != null)
@@ -114,43 +118,60 @@ namespace Tour360TelkomCorpu.TourManager
                         _canvasManager.SetLocationPlank(_locationData.name, () => Debug.Log("Info Panel Clicked"));
 
                         _SphereController.ChangeTextureWithFade(
-                               _locationData.background_360_image.textureImage,
-                               onStartTransition: null,
-                               onFinishTransition: null
+                            _locationData.background_360_image.textureImage,
+                            onStartTransition: null,
+                            onFinishTransition: null
                         );
 
-                        HideHotspot();
+                        /* case TargetHotspot.PANEL_GALLERY:
+        List<Sprite> spriteList = _locationData.gallery
+            .SelectMany(g => g.content_images)
+            .Select(img => img.GetSpriteImage())
+            .Where(s => s != null)
+            .ToList();
+        _canvasManager.OpenPanel(PanelType.GalleryPhoto, spriteList, null);
+        break; */
 
-                        foreach (var nav in _locationData.navigations)
+
+                        foreach (var navigationData in _locationData.navigations)
                         {
-                           
-                            if (nav.target_type != TargetHotspot.PANEL_GALLERY)
+                            int tHotspotType = 0;
+
+                            if (_locationData.locationType == LocationType.DRONE)
                             {
-                                //hotspot.SetupHotspot(
-                                //hotspotName: nav.hotspot_configuration.hotspot_title,
-                                //iconSprite: nav.hotspot_configuration.hotspot_image.GetSpriteImage(),
-                                //action: () =>
-                                //{
-                                //    switch (nav.target_type)
-                                //    {
-                                //        case TargetHotspot.BUILDING:
-                                //            OnChangeLocationByDocumentId(nav.building_target.documentId);
-                                //            break;
-                                //        case TargetHotspot.FACILITY:
-                                //            OnChangeLocationByDocumentId(nav.facility_target.documentId);
-                                //            break;
-
-                                //    }
-                                //},
-                                //position: new Vector3 (
-                                //    nav.hotspot_configuration.coordinate_x,
-                                //    nav.hotspot_configuration.coordinate_y,
-                                //    0));
+                                tHotspotType = 2;
                             }
-                           
-                            InstantiateHotspot(nav);
+                            else
+                            {
+                                tHotspotType = navigationData.target_type == TargetHotspot.PANEL_NAVIGATION ? 3 : 1;
+                            }
 
-                            // panggil fungsi instatiate
+                            // cek hotspot typenya udah dispawn atau belum
+                            if (m_hotspotPooling.TryGetValue((HotspotHandler.HotspotType)tHotspotType, out var list) && list != null)
+                            {
+
+                                var tHotspot = list.FirstOrDefault(h => !h.gameObject.activeSelf);
+
+                                if (tHotspot != null)
+                                {
+                                    tHotspot.SetupHotspot(
+                                        hotspotName: navigationData.hotspot_configuration.hotspot_title,
+                                        iconSprite: navigationData.hotspot_configuration.hotspot_image.GetSpriteImage(),
+                                        action: GenerateNavigationActionByType(navigationData),
+                                        position: new Vector3(navigationData.hotspot_configuration.coordinate_x, navigationData.hotspot_configuration.coordinate_y, 0)
+                                    );
+
+                                    tHotspot.gameObject.SetActive( true );
+                                }
+                                else
+                                {
+                                    InstantiateHotspot(navigationData.hotspot_configuration, (HotspotHandler.HotspotType)tHotspotType, GenerateNavigationActionByType(navigationData));
+                                }
+                            }
+                            else
+                            {
+                                InstantiateHotspot(navigationData.hotspot_configuration, (HotspotHandler.HotspotType)tHotspotType, GenerateNavigationActionByType(navigationData));
+                            }
                         }
                         // END: SET ASSET FUNCTION ...
                     }
@@ -178,92 +199,76 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
-        private void InstantiateHotspot(NavigationSetting nav)
+        private void InstantiateHotspot(HotspotConfiguration hotspotConfig, HotspotHandler.HotspotType hotspotType, Action onClickAction)
         {
-            Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas == null)
+            HotspotHandler newPrefab = _hotspotPrefab.Find(p => p.hotspotType == hotspotType);
+            if (newPrefab == null)
             {
-                Debug.LogError("Tidak ada Canvas di scene!");
+                Debug.LogError($"[TourManager]: Prefab untuk hotspot type {hotspotType} tidak ditemukan di list hotspotPrefab!");
                 return;
             }
 
-   
-            HotspotHandler pooling = m_hotspotPooling
-                .Find(h => h.hotspotType == nav.target_type && !h.gameObject.activeSelf);
+            var nav = Instantiate(newPrefab, _canvasManager.transform);
+            nav.transform.SetAsFirstSibling();
 
-          
-            if (m_hotspotPooling.Count > 0 && m_hotspotPooling.Any(h => h.hotspotType == nav.target_type && !h.gameObject.activeSelf))
+            nav.SetupHotspot(
+                hotspotName: hotspotConfig.hotspot_title,
+                iconSprite: hotspotConfig.hotspot_image.GetSpriteImage(),
+                action: onClickAction,
+                position: new Vector3(hotspotConfig.coordinate_x, hotspotConfig.coordinate_y, 0)
+            );
+
+            if (!m_hotspotPooling.TryGetValue(hotspotType, out var list))
             {
-                pooling.transform.localPosition = new Vector3(
-                nav.hotspot_configuration.coordinate_x,
-                nav.hotspot_configuration.coordinate_y,
-                0);
-                pooling.gameObject.SetActive(true);
+                list = new List<HotspotHandler>();
+                m_hotspotPooling[hotspotType] = list;
+                list.Add(nav);
             }
             else
             {
-                HotspotHandler prefab = _hotspotPrefab.Find(p => p.hotspotType == nav.target_type);
-                if (prefab == null)
-                {
-                    Debug.LogError($"Prefab untuk hotspot type {nav.target_type} tidak ditemukan!");
-                    return;
-                }
-
-                pooling = Instantiate(prefab, canvas.transform);
- 
-                pooling.transform.SetAsFirstSibling();
-                m_hotspotPooling.Add(pooling); 
+                m_hotspotPooling[hotspotType].Add(nav);
             }
 
-          
-            pooling.SetupHotspot(
-                hotspotName: nav.hotspot_configuration.hotspot_title,
-                iconSprite: nav.hotspot_configuration.hotspot_image.GetSpriteImage(),
-                action: () =>
-                {
-                    switch (nav.target_type)
-                    {
-                        case TargetHotspot.BUILDING:
-                            OnChangeLocationByDocumentId(nav.building_target.documentId);
-                            break;
-
-                        case TargetHotspot.FACILITY:
-                            OnChangeLocationByDocumentId(nav.facility_target.documentId);
-                            break;
-
-                        case TargetHotspot.PANEL_GALLERY:
-                            List<Sprite> spriteList = _locationData.gallery
-                                .SelectMany(g => g.content_images)
-                                .Select(img => img.GetSpriteImage())
-                                .Where(s => s != null)
-                                .ToList();
-                            _canvasManager.OpenPanel(PanelType.GalleryPhoto, spriteList, null);
-                            break;
-
-                        case TargetHotspot.PANEL_NAVIGATION:
-                            Debug.Log("Open Panel Navigation");
-                            break;
-                    }
-                },
-                position: new Vector3(
-                    nav.hotspot_configuration.coordinate_x,
-                    nav.hotspot_configuration.coordinate_y,
-                    0
-                )
-
-            );
-            pooling.Invoke("TrackingPosition", 0f);
-            pooling.InvokeRepeating("TrackingPosition", 0.1f, 0.02f);
         }
 
+        private Action GenerateNavigationActionByType(NavigationSetting settings)
+        {
+            Action result = null;
 
+            switch (settings.target_type)
+            {
+                case TargetHotspot.BUILDING:
+                    result = () =>
+                    {
+                        OnChangeLocationByDocumentId(settings.building_target.documentId);
+                    };
+                    break;
+
+                case TargetHotspot.FACILITY:
+                    result = () =>
+                    {
+                        OnChangeLocationByDocumentId(settings.facility_target.documentId);
+                    };
+                    break;
+
+                case TargetHotspot.PANEL_NAVIGATION:
+                    result = () => Debug.Log($"[TourManager]: Open Panel Navigation");
+                    break;
+            }
+
+            return result;
+        }
 
         private void HideHotspot()
         {
-            foreach (var hotspot in m_hotspotPooling)
+            if (m_hotspotPooling == null) return;
+
+            foreach (var item in m_hotspotPooling)
             {
-                if (hotspot != null)
+                foreach (var hotspot in item.Value)
+                {
                     hotspot.gameObject.SetActive(false);
+                }
             }
         }
     }
