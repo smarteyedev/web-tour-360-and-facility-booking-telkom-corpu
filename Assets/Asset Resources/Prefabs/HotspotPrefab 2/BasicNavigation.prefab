@@ -299,7 +299,7 @@ GameObject:
   - component: {fileID: 7891567835803843733}
   - component: {fileID: 7470004212576078395}
   m_Layer: 6
-  m_Name: backroudText
+  m_Name: Hotspot Name
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -371,7 +371,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5192819523068094377}
   m_Enabled: 1
-  m_Alpha: 0.87
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -578,5 +578,5 @@ MonoBehaviour:
       m_Calls: []
   hotspotType: 1
   _imageOutline: {fileID: 8772013121744342757}
-  _imageBgHotspotName: {fileID: 1353363455732129868}
+  _canvasGroupHotspotName: {fileID: 5284294286507025093}
   _rectTransform: {fileID: 1639510537217469576}

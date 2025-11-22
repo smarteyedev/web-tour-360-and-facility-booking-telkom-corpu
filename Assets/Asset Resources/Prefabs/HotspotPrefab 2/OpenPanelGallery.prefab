@@ -222,7 +222,7 @@ MonoBehaviour:
       m_Calls: []
   hotspotType: 4
   _imageOutline: {fileID: 2729680626883371867}
-  _imageBgHotspotName: {fileID: 1927905271345404713}
+  _canvasGroupHotspotName: {fileID: 1343831963083077141}
   _rectTransform: {fileID: 9178263587849517368}
 --- !u!1 &8469724873488165601
 GameObject:
@@ -536,7 +536,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9175686910789888790}
   m_Enabled: 1
-  m_Alpha: 0.87
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0

@@ -72,7 +72,7 @@ MonoBehaviour:
       m_Calls: []
   hotspotType: 2
   _imageOutline: {fileID: 2330737824644360765}
-  _imageBgHotspotName: {fileID: 1871970294785379407}
+  _canvasGroupHotspotName: {fileID: 7490215412882126972}
   _rectTransform: {fileID: 2657035884132494628}
 --- !u!1 &7070491931847688051
 GameObject:
@@ -298,7 +298,7 @@ GameObject:
   - component: {fileID: 4165039630793581239}
   - component: {fileID: 7099051028777333837}
   m_Layer: 6
-  m_Name: backroudText
+  m_Name: Hotspot Name
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -321,7 +321,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -153}
+  m_AnchoredPosition: {x: 0, y: -100}
   m_SizeDelta: {x: 202.3, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &7968412351055136718
@@ -370,7 +370,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7745360353598400307}
   m_Enabled: 1
-  m_Alpha: 0.87
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0

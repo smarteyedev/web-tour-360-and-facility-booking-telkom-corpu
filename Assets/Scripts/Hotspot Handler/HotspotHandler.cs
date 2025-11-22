@@ -33,7 +33,7 @@ namespace Tour360TelkomCorpu.HotspotHandler
         public HotspotType hotspotType;
 
         [SerializeField] private Image _imageOutline;
-        [SerializeField] private Image _imageBgHotspotName;
+        [SerializeField] private CanvasGroup _canvasGroupHotspotName;
         [SerializeField] private RectTransform _rectTransform;
 
         private GameObject _targetPosition;
@@ -243,24 +243,23 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
             if (isHover)
             {
-                if (_imageBgHotspotName != null)
+                if (_canvasGroupHotspotName != null)
                 {
-                    _imageBgHotspotName.gameObject.SetActive(true);
-                    _hoverTween = _imageBgHotspotName
-                        .DOFade(1f, textFadeDuration);
+                    _canvasGroupHotspotName.gameObject.SetActive(true);
+                    _hoverTween = _canvasGroupHotspotName.DOFade(1f, textFadeDuration);
                 }
 
                 transform.DOScale(originalScale * hoverScale, scaleDuration).SetEase(Ease.OutBack);
             }
             else
             {
-                if (_imageBgHotspotName != null)
+                if (_canvasGroupHotspotName != null)
                 {
-                    _hoverTween = _imageBgHotspotName
+                    _hoverTween = _canvasGroupHotspotName
                         .DOFade(0f, textFadeDuration)
                         .OnComplete(() =>
                         {
-                            _imageBgHotspotName.gameObject.SetActive(false);
+                            _canvasGroupHotspotName.gameObject.SetActive(false);
                         });
                 }
 
