@@ -61,11 +61,11 @@ namespace Tour360TelkomCorpu.HotspotHandler
         {
             base.Start();
 
-            //OutlineAnimation();
-            //HoverAnimation(false);
+            OutlineAnimation();
+            HoverAnimation(false);
 
-            //onHoverExit.AddListener(() => HoverAnimation(false));
-            //onHoverEnter.AddListener(() => HoverAnimation(true));
+            onHoverExit.AddListener(() => HoverAnimation(false));
+            onHoverEnter.AddListener(() => HoverAnimation(true));
         }
 
         private void LateUpdate()
@@ -225,40 +225,11 @@ namespace Tour360TelkomCorpu.HotspotHandler
             if (_imageOutline == null)
                 return;
 
-            float startRingScale = 1.0f;
-            float targetRingScale = 1.3f;
-            float ringFadeDuration = 0.5f;
-            float ringDelay = 0.2f;
-
-            if (hotspotType == HotspotType.BasicNavigation)
-            {
-                _imageOutline.color = new Color(1f, 1f, 1f, 1f);
-                _outlineTween = _imageOutline
-                    .DOFade(0f, 1f)
-                    .SetLoops(-1, LoopType.Yoyo)
-                    .SetEase(Ease.InOutSine);
-            }
-            else
-            {
-                RectTransform outlineRect = _imageOutline.rectTransform;
-
-                var seq = DOTween.Sequence();
-                seq.Append(outlineRect.DOScale(targetRingScale, ringFadeDuration))
-                   .Join(_imageOutline.DOFade(1f, ringFadeDuration))
-                   .SetEase(Ease.OutQuad)
-                   .Append(_imageOutline.DOFade(0f, ringFadeDuration))
-                   .SetEase(Ease.InQuad)
-                   .AppendCallback(() =>
-                   {
-                       outlineRect.localScale = Vector3.one * startRingScale;
-                       Color col = _imageOutline.color;
-                       _imageOutline.color = new Color(col.r, col.g, col.b, 0f);
-                   })
-                   .AppendInterval(ringDelay)
-                   .SetLoops(-1);
-
-                _outlineTween = seq;
-            }
+            _imageOutline.color = new Color(1f, 1f, 1f, 1f);
+            _outlineTween = _imageOutline
+                .DOFade(0f, 1f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
         }
 
         private void HoverAnimation(bool isHover)
