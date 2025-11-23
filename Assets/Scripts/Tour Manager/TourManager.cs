@@ -20,15 +20,12 @@ namespace Tour360TelkomCorpu.TourManager
         [Header("Component References")]
         [SerializeField] private DataManager _dataManager;
         [SerializeField] private CanvasManager _canvasManager;
-        [SerializeField] private Camera mainCamera;
+        [SerializeField] private CameraController _mainCamera;
         [SerializeField] private List<HotspotHandler> _hotspotPrefab;
         private Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>> m_hotspotPooling = new Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>>();
         [SerializeField] private SphereController _sphereController;
 
-        private void Awake()
-        {
-            if (mainCamera == null) mainCamera = Camera.main;
-        }
+        private bool m_isTryToLoadingAsset = false;
 
         private void Start()
         {
@@ -38,6 +35,8 @@ namespace Tour360TelkomCorpu.TourManager
         public void StartApplication()
         {
             Debug.Log($"TourManager: Starting App...");
+
+            m_isTryToLoadingAsset = true;
 
             StartCoroutine(_canvasManager.loadingScreen.LoadingScreenForApiProcess(
                 _loadingProcess: _dataManager.GetTelkomCorpuAreaOptionData,
@@ -61,10 +60,12 @@ namespace Tour360TelkomCorpu.TourManager
                             false
                         ));
 
+                    m_isTryToLoadingAsset = false;
                     Debug.Log($"TourManager: Started...");
                 },
                 _onError: () =>
                 {
+                    m_isTryToLoadingAsset = false;
                     // loading process error when web request fail
                 }
             ));
@@ -74,6 +75,7 @@ namespace Tour360TelkomCorpu.TourManager
 
         public void GetTelkomCorpuDataMaster(string _documentId)
         {
+            m_isTryToLoadingAsset = true;
             StartCoroutine(_canvasManager.loadingScreen.LoadingScreenForApiProcess(
                 _loadingProcess: _dataManager.GetTelkomCorpuDataMaster,
                 _documentId: _documentId,
@@ -83,9 +85,11 @@ namespace Tour360TelkomCorpu.TourManager
                     _canvasManager.CloseAllPanel();
 
                     SetupLocationAsset(_currentLocationIndex);
+                    m_isTryToLoadingAsset = false;
                 },
                 _onError: () =>
                 {
+                    m_isTryToLoadingAsset = false;
                     // loading process error when web request fail
                 }
             ));
@@ -93,6 +97,8 @@ namespace Tour360TelkomCorpu.TourManager
 
         public void OnChangeLocationByDocumentId(string documentId)
         {
+            if (m_isTryToLoadingAsset == true) return;
+
             int targetIndex = _dataManager.GenerateLocationIndex(documentId);
             SetupLocationAsset(targetIndex);
         }
@@ -104,6 +110,7 @@ namespace Tour360TelkomCorpu.TourManager
                 onValidStart: () =>
                 {
                     HideHotspot();
+                    m_isTryToLoadingAsset = true;
                 },
                 onDone: (data) =>
                 {
@@ -167,7 +174,7 @@ namespace Tour360TelkomCorpu.TourManager
                                         position: targetPosition,
                                         canvas: _canvasManager.GetComponent<Canvas>(),
                                         rct: _canvasManager.GetComponent<RectTransform>(),
-                                        cam: mainCamera
+                                        cam: _mainCamera.cam
                                     );
 
                                     tHotspot.gameObject.SetActive(true);
@@ -183,9 +190,12 @@ namespace Tour360TelkomCorpu.TourManager
                             }
                         }
                         // END: SET ASSET FUNCTION ...
+
+                        m_isTryToLoadingAsset = false;
                     }
                     else
                     {
+                        m_isTryToLoadingAsset = false;
                         Debug.Log($"TourManager: target index is out of target");
                     }
                 },
@@ -196,11 +206,15 @@ namespace Tour360TelkomCorpu.TourManager
 
         public void NextLocation()
         {
+            if (m_isTryToLoadingAsset == true) return;
+
             SetupLocationAsset(_currentLocationIndex + 1);
         }
 
         public void PreviousLocation()
         {
+            if (m_isTryToLoadingAsset == true) return;
+
             if (_visitedLocationIndexList.Count > 1)
             {
                 _visitedLocationIndexList.RemoveAt(_visitedLocationIndexList.Count - 1);
@@ -229,7 +243,7 @@ namespace Tour360TelkomCorpu.TourManager
                 position: targetPosition,
                 canvas: _canvasManager.GetComponent<Canvas>(),
                 rct: _canvasManager.GetComponent<RectTransform>(),
-                cam: mainCamera
+                cam: _mainCamera.cam
             );
 
             if (!m_hotspotPooling.TryGetValue(hotspotType, out var list))

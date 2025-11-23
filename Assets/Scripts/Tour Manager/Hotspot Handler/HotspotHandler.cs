@@ -82,11 +82,12 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
             HoverAnimation(false);
             _canvasGroupHotspot.alpha = 0f;
+            m_targetPosition.SetActive(false);
         }
 
         private void Update()
         {
-            if (m_targetPosition == null || m_cam == null)
+            if (m_targetPosition == null || m_cam == null || !m_targetPosition.activeSelf)
             {
                 _canvasGroupHotspot.alpha = 0f;
                 return;
@@ -122,6 +123,10 @@ namespace Tour360TelkomCorpu.HotspotHandler
             else
             {
                 m_targetPosition.transform.position = position;
+                m_targetPosition.SetActive(true);
+
+                Vector3 screenPoint = m_cam.WorldToScreenPoint(m_targetPosition.transform.position);
+                _rectTransform.position = screenPoint;
             }
         }
 
