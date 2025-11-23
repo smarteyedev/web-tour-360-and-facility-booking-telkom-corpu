@@ -1,19 +1,19 @@
-    using UnityEngine;
-    using UnityEngine.UI;
-    using System;
+using UnityEngine;
+using UnityEngine.UI;
+using System;
 
-    namespace Tour360TelkomCorpu.CanvasManager
+namespace Tour360TelkomCorpu.CanvasManager
+{
+    public class PanelInfoLocationMaps : PanelController<FormatPanelLocationMapsAsset, Action>
     {
-        public class PanelInfoLocationMaps : PanelController<FormatPanelLocationMapsAsset,Action>
-        {
-            //[Header("PanelInfoLocationMaps")]
-            //[SerializeField] private FormatPanelLocationMapsAsset mapsAsset;
+        //[Header("PanelInfoLocationMaps")]
+        //[SerializeField] private FormatPanelLocationMapsAsset mapsAsset;
 
 
-            [Header("Component References")]
-            [SerializeField] private GameObject _panelContainer;
-            [SerializeField] private Image _ImageMaps;
-            [SerializeField] private Image _ImageDescription;
+        [Header("Component References")]
+        [SerializeField] private GameObject _panelContainer;
+        [SerializeField] private Image _ImageMaps;
+        [SerializeField] private Image _ImageDescription;
 
 
         //private void Start()
@@ -22,7 +22,7 @@
         //        ShowPanel(mapsAsset);
         //}
 
-        protected override void ShowPanel(FormatPanelLocationMapsAsset mapsAsset, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(FormatPanelLocationMapsAsset mapsAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             if (mapsAsset == null)
             {
@@ -31,7 +31,7 @@
             }
 
             _panelContainer.SetActive(true);
-        
+
             if (_ImageMaps != null && mapsAsset.mapsSprite != null)
                 _ImageMaps.sprite = mapsAsset.mapsSprite;
 
@@ -41,10 +41,10 @@
 
 
         public override void HidePanel()
-            {
-                _panelContainer.SetActive(false);
-            }
-
-          
+        {
+            _panelContainer.SetActive(false);
         }
+
+
     }
+}

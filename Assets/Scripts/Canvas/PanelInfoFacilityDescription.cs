@@ -23,7 +23,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         //}
 
 
-        protected override void ShowPanel(FormatPanelDescriptionAsset descriptionAsset, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(FormatPanelDescriptionAsset descriptionAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             if (descriptionAsset == null)
             {
@@ -37,7 +37,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             Debug.Log($"[FacilityDesc] ShowPanel() -> Text: {mapsAsset.descriptionText}, Sprite: {mapsAsset.facilityDetailSprite?.name}");
 
-           
+
             string finalText = mapsAsset.descriptionText;
 
             if (!string.IsNullOrEmpty(finalText) && finalText.Length > 1300)

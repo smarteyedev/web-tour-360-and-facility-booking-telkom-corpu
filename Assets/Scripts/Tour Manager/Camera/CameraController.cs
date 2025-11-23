@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 namespace Tour360TelkomCorpu.TourManager
 {
+    using Tour360TelkomCorpu.CanvasManager;
     public class CameraController : MonoBehaviour
     {
         public bool isFreezeCamera = true;
@@ -35,12 +36,15 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private float autoRotateSpeed = 5f;
 
         [Header("Zoom")]
-        public Camera cam;
-        [SerializeField] private Slider zoomSlider;
         [SerializeField] private float minFOV = 20f;
         [SerializeField] private float maxFOV = 60f;
         [SerializeField] private float zoomSmooth = 6f;
         private float targetFOV = 60f;
+
+        [Header("Component References")]
+        public Camera cam;
+        [SerializeField] private Slider zoomSlider;
+        [SerializeField] private CanvasManager _canvasManager;
 
         void Start()
         {
@@ -57,7 +61,7 @@ namespace Tour360TelkomCorpu.TourManager
 
         void Update()
         {
-            if (isFreezeCamera) return;
+            if (_canvasManager.AnyPanelOpenNow()) return;
 
             HandleAutoRotate();
             HandleManualRotation();

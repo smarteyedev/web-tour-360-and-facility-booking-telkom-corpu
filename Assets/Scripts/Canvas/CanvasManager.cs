@@ -24,11 +24,6 @@ namespace Tour360TelkomCorpu.CanvasManager
             SetupPanelDict();
         }
 
-        private void Start()
-        {
-
-        }
-
         private void SetupPanelDict()
         {
             m_panelControllerDictionary.Clear();
@@ -64,7 +59,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 #endif
         }
 
-        public void OpenPanel(PanelType panelType, object data, Action<string> callback)
+        public void OpenPanel(PanelType panelType, object data, Action<string> callback, Action onClosePanel)
         {
             if (data == null)
             {
@@ -78,7 +73,13 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             if (m_panelControllerDictionary.TryGetValue(panelType, out var panel))
             {
-                panel.ShowPanel(data, callback);
+                panel.ShowPanel(data, callback, () =>
+                {
+                    onClosePanel?.Invoke();
+
+                    panel.HidePanel();
+                    m_currentActivePanel.Remove(panelType);
+                });
 
                 m_currentActivePanel.Add(panelType, panel);
                 Debug.Log($"CanvasManager: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
@@ -110,6 +111,11 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             _textLocationName.text = locationName;
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
+        }
+
+        public bool AnyPanelOpenNow()
+        {
+            return m_currentActivePanel.Count > 0 && m_currentActivePanel != null;
         }
     }
 }

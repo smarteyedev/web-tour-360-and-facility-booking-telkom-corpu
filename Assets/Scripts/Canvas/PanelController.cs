@@ -10,7 +10,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 
     public interface IPanel
     {
-        void ShowPanel(object data, Action<string> callbackUsingDocumentId = null);
+        void ShowPanel(object data, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null);
         void HidePanel();
         PanelType panelIdentity();
     }
@@ -42,7 +42,7 @@ namespace Tour360TelkomCorpu.CanvasManager
             return _panelIndentity;
         }
 
-        void IPanel.ShowPanel(object data, Action<string> callbackUsingDocumentId)
+        void IPanel.ShowPanel(object data, Action<string> callbackUsingDocumentId, Action onClosePanel)
         {
             if (data == null)
             {
@@ -52,7 +52,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             if (data is TData d)
             {
-                ShowPanel(d, callbackUsingDocumentId);
+                ShowPanel(d, callbackUsingDocumentId, onClosePanel);
             }
             else
             {
@@ -61,7 +61,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 #endif
             }
         }
-        protected abstract void ShowPanel(TData contentData, Action<string> callbackUsingDocumentId = null);
+        protected abstract void ShowPanel(TData contentData, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null);
 
         void IPanel.HidePanel()
         {
