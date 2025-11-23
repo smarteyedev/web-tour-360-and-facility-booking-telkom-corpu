@@ -15,12 +15,14 @@ namespace Tour360TelkomCorpu.CanvasManager
         PanelType panelIdentity();
     }
 
+    [Serializable]
     public class FormatPanelLocationMapsAsset
     {
         public Sprite mapsSprite;
         public Sprite DescriptionSprite;
     }
 
+    [Serializable]
     public class FormatPanelDescriptionAsset
     {
         public string descriptionText;
