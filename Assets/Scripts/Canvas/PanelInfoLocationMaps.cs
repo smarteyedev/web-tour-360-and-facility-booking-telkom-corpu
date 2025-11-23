@@ -6,21 +6,11 @@ namespace Tour360TelkomCorpu.CanvasManager
 {
     public class PanelInfoLocationMaps : PanelController<FormatPanelLocationMapsAsset, Action>
     {
-        //[Header("PanelInfoLocationMaps")]
-        //[SerializeField] private FormatPanelLocationMapsAsset mapsAsset;
-
-
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private Image _ImageMaps;
         [SerializeField] private Image _ImageDescription;
-
-
-        //private void Start()
-        //{
-        //    if (mapsAsset != null)
-        //        ShowPanel(mapsAsset);
-        //}
+        [SerializeField] private Button buttonClose;
 
         protected override void ShowPanel(FormatPanelLocationMapsAsset mapsAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
@@ -37,6 +27,9 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             if (_ImageDescription != null && mapsAsset.DescriptionSprite != null)
                 _ImageDescription.sprite = mapsAsset.DescriptionSprite;
+
+            buttonClose.onClick.RemoveAllListeners();
+            buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
         }
 
 
@@ -44,7 +37,5 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             _panelContainer.SetActive(false);
         }
-
-
     }
 }

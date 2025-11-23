@@ -132,13 +132,22 @@ namespace Tour360TelkomCorpu.TourManager
                             switch (_locationData.locationType)
                             {
                                 case LocationType.DRONE:
-                                    Debug.Log($"[Tour Manager]: Show drone location maps");
+                                    FormatPanelLocationMapsAsset dMapsDrone = new FormatPanelLocationMapsAsset();
+                                    dMapsDrone.mapsSprite = _locationData.maps_image.GetSpriteImage();
+                                    dMapsDrone.DescriptionSprite = _locationData.description_image.GetSpriteImage();
+                                    _canvasManager.OpenPanel(PanelType.DroneDescription, dMapsDrone, null, null);
                                     break;
                                 case LocationType.BUILDING:
-                                    Debug.Log($"[Tour Manager]: Show Building location maps");
+                                    FormatPanelLocationMapsAsset dMapsBuilding = new FormatPanelLocationMapsAsset();
+                                    dMapsBuilding.mapsSprite = _locationData.maps_image.GetSpriteImage();
+                                    dMapsBuilding.DescriptionSprite = _locationData.description_image.GetSpriteImage();
+                                    _canvasManager.OpenPanel(PanelType.BuildingDescription, dMapsBuilding, null, null);
                                     break;
                                 case LocationType.FACILITY:
-                                    Debug.Log($"[Tour Manager]: Show Facility description");
+                                    FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
+                                    dFacility.descriptionText = _locationData.description_text;
+                                    dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
+                                    _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, null, null);
                                     break;
                             }
                         });

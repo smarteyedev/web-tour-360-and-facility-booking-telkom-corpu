@@ -110,6 +110,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         public void SetLocationPlank(string locationName, Action onClickPanelInfo)
         {
             _textLocationName.text = locationName;
+            _buttonOpenPanelInformation.onClick.RemoveAllListeners();
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
         }
 

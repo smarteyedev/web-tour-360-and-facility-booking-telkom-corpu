@@ -47,6 +47,7 @@ namespace Tour360TelkomCorpu.CanvasManager
                 image.sprite = sprite;
             }
 
+            buttonClose.onClick.RemoveAllListeners();
             buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
         }
 
