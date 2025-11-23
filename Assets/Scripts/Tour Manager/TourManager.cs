@@ -126,7 +126,10 @@ namespace Tour360TelkomCorpu.TourManager
 #endif
 
                         // START: SET ASSET FUNCTION ...
-                        _canvasManager.SetLocationPlank(_locationData.name, () => Debug.Log("Info Panel Clicked"));
+                        _canvasManager.SetLocationPlank(_locationData.name, () =>
+                        {
+
+                        });
 
                         _sphereController.ChangeTextureWithFade(
                             _locationData.background_360_image.textureImage,
@@ -134,15 +137,22 @@ namespace Tour360TelkomCorpu.TourManager
                             onFinishTransition: null
                         );
 
-                        /* case TargetHotspot.PANEL_GALLERY:
-        List<Sprite> spriteList = _locationData.gallery
-            .SelectMany(g => g.content_images)
-            .Select(img => img.GetSpriteImage())
-            .Where(s => s != null)
-            .ToList();
-        _canvasManager.OpenPanel(PanelType.GalleryPhoto, spriteList, null);
-        break; */
+                        if (_locationData.locationType == LocationType.FACILITY && _locationData.gallery.Count > 0)
+                        {
+                            foreach (var item in _locationData.gallery)
+                            {
+                                InstantiateHotspot(item.hotspot_configuration, HotspotHandler.HotspotType.OpenPanelGallery, () =>
+                                {
+                                    List<Sprite> spriteList = _locationData.gallery
+                                                                .SelectMany(g => g.content_images)
+                                                                .Select(img => img.GetSpriteImage())
+                                                                .Where(s => s != null)
+                                                                .ToList();
 
+                                    _canvasManager.OpenPanel(PanelType.GalleryPhoto, spriteList, null);
+                                });
+                            }
+                        }
 
                         foreach (var navigationData in _locationData.navigations)
                         {
