@@ -5,6 +5,8 @@ namespace Tour360TelkomCorpu.TourManager
 {
     public class CameraController : MonoBehaviour
     {
+        public bool isFreezeCamera = true;
+
         [Header("Rotation")]
         [SerializeField] private Transform horizontal;   // Rotasi Y
         [SerializeField] private Transform vertical;     // Rotasi X
@@ -48,13 +50,15 @@ namespace Tour360TelkomCorpu.TourManager
             {
                 zoomSlider.minValue = 0;
                 zoomSlider.maxValue = 1;
-                // targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
+                targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
                 zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
             }
         }
 
         void Update()
         {
+            if (isFreezeCamera) return;
+
             HandleAutoRotate();
             HandleManualRotation();
             HandleInertia();
