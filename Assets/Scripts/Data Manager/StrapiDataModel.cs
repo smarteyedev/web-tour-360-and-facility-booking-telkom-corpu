@@ -176,10 +176,10 @@ namespace Tour360TelkomCorpu.DataManager
     [Serializable]
     public enum TargetHotspot
     {
-        FACILITY,
-        BUILDING,
-        PANEL_GALLERY,
-        PANEL_NAVIGATION
+        FACILITY = 1,
+        BUILDING = 2,
+        PANEL_NAVIGATION = 3,
+        //PANEL_GALLERY = 4
     }
 
     public static class ModelHandler

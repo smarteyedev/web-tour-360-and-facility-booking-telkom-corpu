@@ -356,6 +356,7 @@ query GetTelkomCorpuArea($documentId: ID!) {
 
     public IEnumerator RequestLocationDataContentByIndex(
       int locationIndex,
+      Action onValidStart,
       Action<LocationDataModel> onDone,
       Action<float> onProgress = null,
       bool forceRedownload = false
@@ -368,7 +369,9 @@ query GetTelkomCorpuArea($documentId: ID!) {
         yield break;
       }
 
-      LocationDataModel locationTarget = _locationDataList[locationIndex];
+        onValidStart?.Invoke();
+
+        LocationDataModel locationTarget = _locationDataList[locationIndex];
 #if UNITY_EDITOR
       Debug.Log($"DataManager: Checking location {locationTarget.name} asset...");
 #endif
