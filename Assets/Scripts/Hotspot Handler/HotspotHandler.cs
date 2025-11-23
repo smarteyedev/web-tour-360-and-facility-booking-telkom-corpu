@@ -45,9 +45,6 @@ namespace Tour360TelkomCorpu.HotspotHandler
         private GameObject m_targetPosition;
         private Camera m_cam;
 
-        // state tracking
-        private bool m_isTracking;
-
         // cache tween supaya bisa di-Kill
         private Tween m_outlineTween;
         private Tween m_hoverTween;
@@ -59,14 +56,6 @@ namespace Tour360TelkomCorpu.HotspotHandler
         {
             if (_rectTransform == null)
                 _rectTransform = GetComponent<RectTransform>();
-
-            /* m_cam = Camera.main;
-
-            if (canvasRect == null)
-                canvasRect = gameObject.GetComponentInParent<RectTransform>();
-
-            if (canvasRect == null)
-                uiCanvas = gameObject.GetComponentInParent<Canvas>(); */
         }
 
         protected override void Start()
@@ -80,6 +69,21 @@ namespace Tour360TelkomCorpu.HotspotHandler
             onHoverEnter.AddListener(() => HoverAnimation(true));
         }
 
+        protected override void Enable()
+        {
+            base.Enable();
+
+            HoverAnimation(false);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            HoverAnimation(false);
+            _canvasGroupHotspot.alpha = 0f;
+        }
+
         private void Update()
         {
             if (m_targetPosition == null || m_cam == null)
@@ -88,39 +92,7 @@ namespace Tour360TelkomCorpu.HotspotHandler
                 return;
             }
 
-            // Cek apakah target berada di depan kamera (z > 0)
-            Vector3 screenPoint = m_cam.WorldToScreenPoint(m_targetPosition.transform.position);
-            if (screenPoint.z <= 0f)
-            {
-                if (hideWhenBehind) _canvasGroupHotspot.alpha = 0f;
-                return;
-            }
-
-            // Cek sudut
-            Vector3 toTarget = m_targetPosition.transform.position - m_cam.transform.position;
-            float angle = Vector3.Angle(m_cam.transform.forward, toTarget);
-
-            if (angle <= maxVisibleAngle)
-            {
-                // visible -> proyeksikan ke canvas
-                _canvasGroupHotspot.alpha = 1f;
-                Vector2 localPoint;
-                bool ok = RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    canvasRect,
-                    screenPoint,
-                    uiCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : m_cam,
-                    out localPoint
-                );
-
-                if (ok) _rectTransform.anchoredPosition = localPoint;
-                else _rectTransform.position = screenPoint; // fallback
-            }
-            else
-            {
-                _canvasGroupHotspot.alpha = 0f;
-
-                Debug.Log($"hidee...");
-            }
+            TrackingPosition();
         }
 
         #endregion
@@ -143,27 +115,14 @@ namespace Tour360TelkomCorpu.HotspotHandler
             if (action != null)
                 onLeftMouseDown.AddListener(() => action());
 
-            InstantiateTargetPosition(position);
-
-            // tracking hanya aktif kalau target berhasil dibuat
-            // _isTracking = _targetPosition != null;
-        }
-
-        /// <summary>
-        /// Matikan hotspot: berhenti tracking, matikan target world & UI,
-        /// tapi TIDAK destroy target hotspot.
-        /// </summary>
-        public void StopHotspot()
-        {
-            m_isTracking = false;
-
-            if (m_targetPosition != null)
-                m_targetPosition.SetActive(false);
-
-            if (_rectTransform != null)
-                _rectTransform.gameObject.SetActive(false);
-
-            gameObject.SetActive(false);
+            if (m_targetPosition == null)
+            {
+                InstantiateTargetPosition(position);
+            }
+            else
+            {
+                m_targetPosition.transform.position = position;
+            }
         }
 
         #endregion
@@ -181,7 +140,32 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
         private void TrackingPosition()
         {
+            // Cek apakah target berada di depan kamera (z > 0)
+            Vector3 screenPoint = m_cam.WorldToScreenPoint(m_targetPosition.transform.position);
+            if (screenPoint.z <= 0f)
+            {
+                if (hideWhenBehind) _canvasGroupHotspot.alpha = 0f;
+                return;
+            }
 
+            // Cek sudut
+            Vector3 toTarget = m_targetPosition.transform.position - m_cam.transform.position;
+            float angle = Vector3.Angle(m_cam.transform.forward, toTarget);
+            if (angle > maxVisibleAngle) { _canvasGroupHotspot.alpha = 0f; return; }
+
+            _canvasGroupHotspot.alpha = 1f;
+
+            if (canvasRect != null && uiCanvas != null)
+            {
+                Vector2 localPoint;
+                bool ok = RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, m_cam, out localPoint);
+                if (ok) _rectTransform.anchoredPosition = localPoint;
+                else _rectTransform.position = screenPoint;
+            }
+            else
+            {
+                _rectTransform.position = screenPoint;
+            }
         }
 
         #endregion

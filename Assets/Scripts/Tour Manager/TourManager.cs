@@ -158,11 +158,13 @@ namespace Tour360TelkomCorpu.TourManager
 
                                 if (tHotspot != null)
                                 {
+                                    Vector3 targetPosition = _sphereController.UVToWorldPosition(navigationData.hotspot_configuration.coordinate_x, navigationData.hotspot_configuration.coordinate_y);
+
                                     tHotspot.SetupHotspot(
                                         hotspotName: navigationData.hotspot_configuration.hotspot_title,
                                         iconSprite: navigationData.hotspot_configuration.hotspot_image.GetSpriteImage(),
                                         action: GenerateNavigationActionByType(navigationData),
-                                        position: new Vector3(navigationData.hotspot_configuration.coordinate_x, navigationData.hotspot_configuration.coordinate_y, 0),
+                                        position: targetPosition,
                                         canvas: _canvasManager.GetComponent<Canvas>(),
                                         rct: _canvasManager.GetComponent<RectTransform>(),
                                         cam: mainCamera
