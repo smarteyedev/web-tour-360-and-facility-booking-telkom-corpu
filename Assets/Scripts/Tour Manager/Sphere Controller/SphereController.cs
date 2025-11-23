@@ -9,8 +9,9 @@ namespace Tour360TelkomCorpu.SphereController
 {
     public class SphereController : MonoBehaviour
     {
-
         [SerializeField] private Material _Material; //ambil nilai ini 
+        [SerializeField] private Transform _sphereTransform; // assign sphere GameObject
+        [SerializeField] private float _surfaceOffset = 0.01f; // small offset to avoid clipping
 
         public void ChangeTextureWithFade(Texture targetTexture, Action onStartTransition, Action onFinishTransition)
         {
@@ -23,7 +24,7 @@ namespace Tour360TelkomCorpu.SphereController
             if (useFadeTransition)
             {
                 float blendValue = _Material.GetFloat("_Blend");
-                Debug.Log("Current Blend Value: " + blendValue);
+                //Debug.Log("Current Blend Value: " + blendValue);
 
                 bool usingTexture = blendValue <= 0.5f;
                 float endBlend = usingTexture ? 1 : 0;
@@ -77,6 +78,56 @@ namespace Tour360TelkomCorpu.SphereController
                             });
                     });
             }
+        }
+
+        // Hitung radius world sphere
+        public float GetSphereRadius()
+        {
+            if (_sphereTransform == null) return 1f;
+            MeshFilter mf = _sphereTransform.GetComponent<MeshFilter>();
+            if (mf != null && mf.sharedMesh != null)
+            {
+                Bounds b = mf.sharedMesh.bounds;
+                float localMax = Mathf.Max(b.extents.x, b.extents.y, b.extents.z);
+                Vector3 lossy = _sphereTransform.lossyScale;
+                float maxScale = Mathf.Max(Mathf.Abs(lossy.x), Mathf.Abs(lossy.y), Mathf.Abs(lossy.z));
+                return localMax * maxScale;
+            }
+            // fallback for unit sphere
+            Vector3 ls = _sphereTransform.lossyScale;
+            return 0.5f * Mathf.Max(Mathf.Abs(ls.x), Mathf.Abs(ls.y), Mathf.Abs(ls.z));
+        }
+
+        /// <summary>
+        /// Convert UV (0..1) to world position on/near sphere surface.
+        /// u = x, v = y.
+        /// </summary>
+        public Vector3 UVToWorldPosition(float u, float v, float extraOffset = 0f)
+        {
+            if (_sphereTransform == null) return Vector3.zero;
+
+            u = Mathf.Repeat(u, 1f);
+            v = Mathf.Clamp01(v);
+
+            float theta = u * Mathf.PI * 2f;
+            float phi = (0.5f - v) * Mathf.PI; // flip vertical if needed: phi = (v - 0.5f) * PI
+
+            float cosPhi = Mathf.Cos(phi);
+            Vector3 dirLocal = new Vector3(
+                cosPhi * Mathf.Sin(theta),
+                Mathf.Sin(phi),
+                cosPhi * Mathf.Cos(theta)
+            ).normalized;
+
+            float radius = GetSphereRadius();
+            Debug.Log($"radius: {radius}");
+            float r = radius + _surfaceOffset + extraOffset;
+
+            // transform direction to world (handles sphere rotation)
+            Vector3 dirWorld = _sphereTransform.TransformDirection(dirLocal);
+            Vector3 center = _sphereTransform.position;
+
+            return center + dirWorld * r;
         }
     }
 }

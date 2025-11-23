@@ -64,6 +64,11 @@ public class ButtonInteractive : MonoBehaviour, IPointerEnterHandler, IPointerEx
         OnEventStateUpdate(m_eventState);
     }
 
+    protected virtual void OnDisable()
+    {
+
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
         if (!isInteractable) { return; }
