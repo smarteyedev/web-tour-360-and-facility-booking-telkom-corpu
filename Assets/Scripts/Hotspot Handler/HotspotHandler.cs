@@ -7,8 +7,6 @@ using DG.Tweening;
 
 namespace Tour360TelkomCorpu.HotspotHandler
 {
-    using Tour360TelkomCorpu.DataManager;
-
     public class HotspotHandler : ButtonInteractive
     {
         [Serializable]
@@ -29,22 +27,30 @@ namespace Tour360TelkomCorpu.HotspotHandler
             { HotspotType.OpenPanelGallery, Color.yellow }
         };
 
-        [Header("Hotspot Handler Component")]
+        [Header("Hotspot Handler")]
+        [Header("Hotspot Handler | Configuration")]
         public HotspotType hotspotType;
+        [Range(0f, 90f)] public float maxVisibleAngle = 15f;
+        public bool hideWhenBehind = true;
 
+        [Header("Hotspot Handler | Component References")]
         [SerializeField] private Image _imageOutline;
-        [SerializeField] private CanvasGroup _canvasGroupHotspotName;
+        [SerializeField] private CanvasGroup _canvasGroupHotspot;
+        [SerializeField] private CanvasGroup _canvasGroupPlankName;
         [SerializeField] private RectTransform _rectTransform;
 
-        private GameObject _targetPosition;
-        private Camera _cam;
+        private RectTransform canvasRect;
+        private Canvas uiCanvas;
+
+        private GameObject m_targetPosition;
+        private Camera m_cam;
 
         // state tracking
-        private bool _isTracking;
+        private bool m_isTracking;
 
         // cache tween supaya bisa di-Kill
-        private Tween _outlineTween;
-        private Tween _hoverTween;
+        private Tween m_outlineTween;
+        private Tween m_hoverTween;
 
 
         #region Unity Lifecycle
@@ -54,7 +60,13 @@ namespace Tour360TelkomCorpu.HotspotHandler
             if (_rectTransform == null)
                 _rectTransform = GetComponent<RectTransform>();
 
-            _cam = Camera.main;
+            /* m_cam = Camera.main;
+
+            if (canvasRect == null)
+                canvasRect = gameObject.GetComponentInParent<RectTransform>();
+
+            if (canvasRect == null)
+                uiCanvas = gameObject.GetComponentInParent<Canvas>(); */
         }
 
         protected override void Start()
@@ -68,10 +80,47 @@ namespace Tour360TelkomCorpu.HotspotHandler
             onHoverEnter.AddListener(() => HoverAnimation(true));
         }
 
-        private void LateUpdate()
+        private void Update()
         {
-            //if (_isTracking)
-            //    TrackingPosition();
+            if (m_targetPosition == null || m_cam == null)
+            {
+                _canvasGroupHotspot.alpha = 0f;
+                return;
+            }
+
+            // Cek apakah target berada di depan kamera (z > 0)
+            Vector3 screenPoint = m_cam.WorldToScreenPoint(m_targetPosition.transform.position);
+            if (screenPoint.z <= 0f)
+            {
+                if (hideWhenBehind) _canvasGroupHotspot.alpha = 0f;
+                return;
+            }
+
+            // Cek sudut
+            Vector3 toTarget = m_targetPosition.transform.position - m_cam.transform.position;
+            float angle = Vector3.Angle(m_cam.transform.forward, toTarget);
+
+            if (angle <= maxVisibleAngle)
+            {
+                // visible -> proyeksikan ke canvas
+                _canvasGroupHotspot.alpha = 1f;
+                Vector2 localPoint;
+                bool ok = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect,
+                    screenPoint,
+                    uiCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : m_cam,
+                    out localPoint
+                );
+
+                if (ok) _rectTransform.anchoredPosition = localPoint;
+                else _rectTransform.position = screenPoint; // fallback
+            }
+            else
+            {
+                _canvasGroupHotspot.alpha = 0f;
+
+                Debug.Log($"hidee...");
+            }
         }
 
         #endregion
@@ -79,10 +128,14 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
         #region Public API
 
-        public void SetupHotspot(string hotspotName, Sprite iconSprite, Action action, Vector3 position)
+        public void SetupHotspot(string hotspotName, Sprite iconSprite, Action action, Vector3 position, Canvas canvas, RectTransform rct, Camera cam)
         {
             _imageButton.sprite = iconSprite;
             _textButton.text = hotspotName;
+
+            uiCanvas = canvas;
+            canvasRect = rct;
+            m_cam = cam;
 
             // penting untuk pooling:
             onLeftMouseDown.RemoveAllListeners();
@@ -90,10 +143,10 @@ namespace Tour360TelkomCorpu.HotspotHandler
             if (action != null)
                 onLeftMouseDown.AddListener(() => action());
 
-            //InstantiateTargetPosition(position);
+            InstantiateTargetPosition(position);
 
             // tracking hanya aktif kalau target berhasil dibuat
-            //_isTracking = _targetPosition != null;
+            // _isTracking = _targetPosition != null;
         }
 
         /// <summary>
@@ -102,15 +155,14 @@ namespace Tour360TelkomCorpu.HotspotHandler
         /// </summary>
         public void StopHotspot()
         {
-            _isTracking = false;
+            m_isTracking = false;
 
-            if (_targetPosition != null)
-                _targetPosition.SetActive(false);
+            if (m_targetPosition != null)
+                m_targetPosition.SetActive(false);
 
             if (_rectTransform != null)
                 _rectTransform.gameObject.SetActive(false);
 
-            // ⬅️ Ini penting untuk pooling:
             gameObject.SetActive(false);
         }
 
@@ -119,114 +171,32 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
         #region World Target & Tracking
 
-        private void InstantiateTargetPosition(Vector3 position)
+        private void InstantiateTargetPosition(Vector3 worldPos)
         {
-            // pastikan camera ada
-            if (_cam == null)
-            {
-                _cam = Camera.main;
-                if (_cam == null)
-                {
-                    Debug.LogError("❌ MainCamera tidak ditemukan di scene!");
-                    return;
-                }
-            }
+            GameObject target = new GameObject($"[TargetPosition] for hotspot {_textButton.text}");
+            target.transform.position = worldPos;
 
-            // hitung world position baru dari parameter 'position'
-            float distanceFromCamera = 2f;
-
-            Vector3 pos = position;
-            Vector3 direction = _cam.transform.forward;
-            Vector3 offset = Quaternion.Euler(
-                (pos.y - 0.5f) * 180f,
-                (pos.x - 0.5f) * 360f,
-                1f) * direction;
-
-            Vector3 spawnPos = _cam.transform.position + offset * distanceFromCamera;
-
-            // ⚠️ Jika target SUDAH ada → cukup update posisinya kalau BERBEDA + hidupkan lagi
-            if (_targetPosition != null && _targetPosition.scene.IsValid())
-            {
-                Transform t = _targetPosition.transform;
-
-                if (t.position != spawnPos)
-                {
-                    t.position = spawnPos;
-                    t.rotation = Quaternion.LookRotation(_cam.transform.position - spawnPos);
-                }
-
-                if (!_targetPosition.activeSelf)
-                    _targetPosition.SetActive(true);
-
-                return; // tidak buat GameObject baru
-            }
-
-            // ✅ Kalau target BELUM ada → buat GameObject baru
-            _targetPosition = new GameObject("Target Position");
-            Transform targetTransform = _targetPosition.transform;
-            targetTransform.position = spawnPos;
-            targetTransform.rotation = Quaternion.LookRotation(_cam.transform.position - spawnPos);
-
-            Color color = HotspotColors.TryGetValue(hotspotType, out var c)
-                ? c
-                : Color.white;
-
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.SetParent(targetTransform, false);
-            sphere.transform.localPosition = Vector3.zero;
-            sphere.transform.localScale = Vector3.one * 0.05f;
-
-            var renderer = sphere.GetComponent<Renderer>();
-            if (renderer != null)
-                renderer.material.color = color;
+            m_targetPosition = target;
         }
 
         private void TrackingPosition()
         {
-            if (_rectTransform == null)
-            {
-                _isTracking = false;
-                return;
-            }
 
-            if (_targetPosition == null || _cam == null)
-            {
-                if (_rectTransform.gameObject.activeSelf)
-                    _rectTransform.gameObject.SetActive(false);
-
-                _isTracking = false;
-                return;
-            }
-
-            Vector3 screenPos = _cam.WorldToScreenPoint(_targetPosition.transform.position);
-
-            /* if (screenPos.z <= 0f)
-            {
-                if (_rectTransform.gameObject.activeSelf)
-                    _rectTransform.gameObject.SetActive(false);
-                return;
-            }
-
-            if (!_rectTransform.gameObject.activeSelf)
-                _rectTransform.gameObject.SetActive(true); */
-
-            _rectTransform.position = screenPos;
         }
 
         #endregion
 
 
         #region Animations
-
         private void OutlineAnimation()
         {
-            _outlineTween?.Kill();
+            m_outlineTween?.Kill();
 
             if (_imageOutline == null)
                 return;
 
             _imageOutline.color = new Color(1f, 1f, 1f, 1f);
-            _outlineTween = _imageOutline
+            m_outlineTween = _imageOutline
                 .DOFade(0f, 1f)
                 .SetLoops(-1, LoopType.Yoyo)
                 .SetEase(Ease.InOutSine);
@@ -234,7 +204,7 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
         private void HoverAnimation(bool isHover)
         {
-            _hoverTween?.Kill();
+            m_hoverTween?.Kill();
 
             float hoverScale = 1.2f;
             float scaleDuration = 0.2f;
@@ -243,30 +213,29 @@ namespace Tour360TelkomCorpu.HotspotHandler
 
             if (isHover)
             {
-                if (_canvasGroupHotspotName != null)
+                if (_canvasGroupPlankName != null)
                 {
-                    _canvasGroupHotspotName.gameObject.SetActive(true);
-                    _hoverTween = _canvasGroupHotspotName.DOFade(1f, textFadeDuration);
+                    _canvasGroupPlankName.gameObject.SetActive(true);
+                    m_hoverTween = _canvasGroupPlankName.DOFade(1f, textFadeDuration);
                 }
 
                 transform.DOScale(originalScale * hoverScale, scaleDuration).SetEase(Ease.OutBack);
             }
             else
             {
-                if (_canvasGroupHotspotName != null)
+                if (_canvasGroupPlankName != null)
                 {
-                    _hoverTween = _canvasGroupHotspotName
+                    m_hoverTween = _canvasGroupPlankName
                         .DOFade(0f, textFadeDuration)
                         .OnComplete(() =>
                         {
-                            _canvasGroupHotspotName.gameObject.SetActive(false);
+                            _canvasGroupPlankName.gameObject.SetActive(false);
                         });
                 }
 
                 transform.DOScale(originalScale, scaleDuration).SetEase(Ease.InBack);
             }
         }
-
         #endregion
     }
 }

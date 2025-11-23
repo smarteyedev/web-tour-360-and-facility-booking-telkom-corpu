@@ -18,13 +18,17 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private List<int> _visitedLocationIndexList = new List<int>();
 
         [Header("Component References")]
-        [SerializeField]
-        private DataManager _dataManager;
-        [SerializeField]
-        private CanvasManager _canvasManager;
+        [SerializeField] private DataManager _dataManager;
+        [SerializeField] private CanvasManager _canvasManager;
+        [SerializeField] private Camera mainCamera;
         [SerializeField] private List<HotspotHandler> _hotspotPrefab;
-        private  Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>> m_hotspotPooling = new Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>>();
-        [SerializeField] private SphereController _SphereController;
+        private Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>> m_hotspotPooling = new Dictionary<HotspotHandler.HotspotType, List<HotspotHandler>>();
+        [SerializeField] private SphereController _sphereController;
+
+        private void Awake()
+        {
+            if (mainCamera == null) mainCamera = Camera.main;
+        }
 
         private void Start()
         {
@@ -117,7 +121,7 @@ namespace Tour360TelkomCorpu.TourManager
                         // START: SET ASSET FUNCTION ...
                         _canvasManager.SetLocationPlank(_locationData.name, () => Debug.Log("Info Panel Clicked"));
 
-                        _SphereController.ChangeTextureWithFade(
+                        _sphereController.ChangeTextureWithFade(
                             _locationData.background_360_image.textureImage,
                             onStartTransition: null,
                             onFinishTransition: null
@@ -158,10 +162,13 @@ namespace Tour360TelkomCorpu.TourManager
                                         hotspotName: navigationData.hotspot_configuration.hotspot_title,
                                         iconSprite: navigationData.hotspot_configuration.hotspot_image.GetSpriteImage(),
                                         action: GenerateNavigationActionByType(navigationData),
-                                        position: new Vector3(navigationData.hotspot_configuration.coordinate_x, navigationData.hotspot_configuration.coordinate_y, 0)
+                                        position: new Vector3(navigationData.hotspot_configuration.coordinate_x, navigationData.hotspot_configuration.coordinate_y, 0),
+                                        canvas: _canvasManager.GetComponent<Canvas>(),
+                                        rct: _canvasManager.GetComponent<RectTransform>(),
+                                        cam: mainCamera
                                     );
 
-                                    tHotspot.gameObject.SetActive( true );
+                                    tHotspot.gameObject.SetActive(true);
                                 }
                                 else
                                 {
@@ -211,11 +218,16 @@ namespace Tour360TelkomCorpu.TourManager
             var nav = Instantiate(newPrefab, _canvasManager.transform);
             nav.transform.SetAsFirstSibling();
 
+            Vector3 targetPosition = _sphereController.UVToWorldPosition(hotspotConfig.coordinate_x, hotspotConfig.coordinate_y);
+
             nav.SetupHotspot(
                 hotspotName: hotspotConfig.hotspot_title,
                 iconSprite: hotspotConfig.hotspot_image.GetSpriteImage(),
                 action: onClickAction,
-                position: new Vector3(hotspotConfig.coordinate_x, hotspotConfig.coordinate_y, 0)
+                position: targetPosition,
+                canvas: _canvasManager.GetComponent<Canvas>(),
+                rct: _canvasManager.GetComponent<RectTransform>(),
+                cam: mainCamera
             );
 
             if (!m_hotspotPooling.TryGetValue(hotspotType, out var list))
@@ -228,7 +240,6 @@ namespace Tour360TelkomCorpu.TourManager
             {
                 m_hotspotPooling[hotspotType].Add(nav);
             }
-
         }
 
         private Action GenerateNavigationActionByType(NavigationSetting settings)

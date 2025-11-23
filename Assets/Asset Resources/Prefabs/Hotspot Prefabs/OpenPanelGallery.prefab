@@ -160,6 +160,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9178263587849517368}
   - component: {fileID: 3330603548237895976}
+  - component: {fileID: 8854197413225873570}
   m_Layer: 6
   m_Name: OpenPanelGallery
   m_TagString: Untagged
@@ -221,9 +222,24 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   hotspotType: 4
+  maxVisibleAngle: 90
+  hideWhenBehind: 1
   _imageOutline: {fileID: 2729680626883371867}
-  _canvasGroupHotspotName: {fileID: 1343831963083077141}
+  _canvasGroupHotspot: {fileID: 8854197413225873570}
+  _canvasGroupPlankName: {fileID: 1343831963083077141}
   _rectTransform: {fileID: 9178263587849517368}
+--- !u!225 &8854197413225873570
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7549758545875912157}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8469724873488165601
 GameObject:
   m_ObjectHideFlags: 0
