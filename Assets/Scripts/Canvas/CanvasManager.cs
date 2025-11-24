@@ -13,6 +13,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [Header("Component Menu Bar")]
         [SerializeField] private TextMeshProUGUI _textLocationName;
         [SerializeField] private Button _buttonOpenPanelInformation;
+        [SerializeField] private Button _buttonAutoRotation;
 
         public LoadingScreenHandler loadingScreen;
         [SerializeField] private List<MonoBehaviour> _panelComponentList;
@@ -117,6 +118,11 @@ namespace Tour360TelkomCorpu.CanvasManager
         public bool AnyPanelOpenNow()
         {
             return m_currentActivePanel.Count > 0 && m_currentActivePanel != null;
+        }
+
+        public void SetupButtonAutoRotation(Action onClick)
+        {
+            _buttonAutoRotation.onClick.AddListener(() => onClick?.Invoke());
         }
     }
 }

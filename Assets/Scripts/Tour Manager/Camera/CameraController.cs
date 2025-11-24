@@ -6,8 +6,6 @@ namespace Tour360TelkomCorpu.TourManager
     using Tour360TelkomCorpu.CanvasManager;
     public class CameraController : MonoBehaviour
     {
-        public bool isFreezeCamera = true;
-
         [Header("Rotation")]
         [SerializeField] private Transform horizontal;   // Rotasi Y
         [SerializeField] private Transform vertical;     // Rotasi X
@@ -57,6 +55,8 @@ namespace Tour360TelkomCorpu.TourManager
                 targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
                 zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
             }
+
+            _canvasManager.SetupButtonAutoRotation(AutoRotationToggle);
         }
 
         void Update()
@@ -83,26 +83,47 @@ namespace Tour360TelkomCorpu.TourManager
         // ============================================================
         //  MANUAL ROTATION
         // ============================================================
+
+        private float m_holdTime = 0f;
+        private float m_holdThreshold = .5f;
+        private float m_moveThreshold = 0.1f;
         void HandleManualRotation()
         {
             if (Input.GetMouseButtonDown(0))
             {
-                autoRotate = false;
-                applyingInertia = false;
                 lastMousePos = Input.mousePosition;
-                inertiaVelocity = Vector2.zero;
-                return;
+                m_holdTime = 0f;
             }
 
             if (Input.GetMouseButton(0))
             {
+                // hitung durasi hold
+                m_holdTime += Time.deltaTime;
+
+                // hitung pergerakan mouse
+                Vector3 deltaHold = Input.mousePosition - lastMousePos;
+
+                bool isMoving = deltaHold.sqrMagnitude > m_moveThreshold * m_moveThreshold;
+                bool holdLongEnough = m_holdTime >= m_holdThreshold;
+
+                // ---------------------------
+                // CONDITION YANG ANDA MINTA
+                // ---------------------------
+                if (holdLongEnough && isMoving)
+                {
+                    autoRotate = false;
+                    applyingInertia = false;
+                    inertiaVelocity = Vector2.zero;
+                    return; // <<==== KELUAR!
+                }
+
+                // rotasi normal
                 Vector3 current = Input.mousePosition;
                 Vector2 delta = (current - lastMousePos) * sensitivity;
                 lastMousePos = current;
 
                 ApplyRotation(delta);
 
-                // simpan kecepatan untuk inertia
                 inertiaVelocity = delta;
             }
 
@@ -177,6 +198,11 @@ namespace Tour360TelkomCorpu.TourManager
         {
             targetFOV = Mathf.Lerp(minFOV, maxFOV, v);
             autoRotate = false;
+        }
+
+        public void AutoRotationToggle()
+        {
+            autoRotate = !autoRotate;
         }
     }
 }

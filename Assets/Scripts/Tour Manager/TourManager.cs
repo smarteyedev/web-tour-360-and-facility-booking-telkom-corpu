@@ -111,6 +111,7 @@ namespace Tour360TelkomCorpu.TourManager
                 onValidStart: () =>
                 {
                     HideHotspot();
+                    _canvasManager.CloseAllPanel();
                     m_isTryToLoadingAsset = true;
                 },
                 onDone: (data) =>
