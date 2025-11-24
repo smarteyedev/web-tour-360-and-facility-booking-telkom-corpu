@@ -74,6 +74,19 @@ namespace Tour360TelkomCorpu.TourManager
             _currentLocationIndex = 0;
         }
 
+        public void OpenCorpuAreaSelectionPanel()
+        {
+            if (m_isTryToLoadingAsset == true) return;
+
+            StartCoroutine(_dataManager.RequestTelkomCorpuAreaOptionContent((data) =>
+            {
+                _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, null, (documentId) => GetTelkomCorpuDataMaster(documentId), null);
+            },
+                (progress) => { /* Debug.Log($"{progress}") */ },
+                false
+            ));
+        }
+
         public void GetTelkomCorpuDataMaster(string _documentId)
         {
             m_isTryToLoadingAsset = true;
@@ -87,6 +100,8 @@ namespace Tour360TelkomCorpu.TourManager
 
                     SetupLocationAsset(_currentLocationIndex);
                     m_isTryToLoadingAsset = false;
+
+                    
                 },
                 _onError: () =>
                 {
@@ -130,6 +145,8 @@ namespace Tour360TelkomCorpu.TourManager
                         // START: SET ASSET FUNCTION ...
                         _canvasManager.SetLocationPlank(_locationData.name, () =>
                         {
+                            if (m_isTryToLoadingAsset == true) return;
+
                             switch (_locationData.locationType)
                             {
                                 case LocationType.DRONE:
@@ -200,40 +217,12 @@ namespace Tour360TelkomCorpu.TourManager
                                     }
                                     else
                                     {
-                                        InstantiateHotspot(item.hotspot_configuration, HotspotHandler.HotspotType.OpenPanelGallery, () =>
-                                        {
-                                            List<Sprite> spriteList = _locationData.gallery
-                                                                        .SelectMany(g => g.content_images)
-                                                                        .Select(img => img.GetSpriteImage())
-                                                                        .Where(s => s != null)
-                                                                        .ToList();
-
-                                            _canvasManager.OpenPanel(
-                                                panelType: PanelType.GalleryPhoto,
-                                                data: spriteList,
-                                                callback: null,
-                                                onClosePanel: null
-                                            );
-                                        });
+                                        InstantiateGalleryHotspot(item.hotspot_configuration);
                                     }
                                 }
                                 else
                                 {
-                                    InstantiateHotspot(item.hotspot_configuration, HotspotHandler.HotspotType.OpenPanelGallery, () =>
-                                    {
-                                        List<Sprite> spriteList = _locationData.gallery
-                                                                    .SelectMany(g => g.content_images)
-                                                                    .Select(img => img.GetSpriteImage())
-                                                                    .Where(s => s != null)
-                                                                    .ToList();
-
-                                        _canvasManager.OpenPanel(
-                                            panelType: PanelType.GalleryPhoto,
-                                            data: spriteList,
-                                            callback: null,
-                                            onClosePanel: null
-                                        );
-                                    });
+                                        InstantiateGalleryHotspot(item.hotspot_configuration);
                                 }
 
                             }
@@ -354,6 +343,25 @@ namespace Tour360TelkomCorpu.TourManager
             {
                 m_hotspotPooling[hotspotType].Add(nav);
             }
+        }
+
+        private void InstantiateGalleryHotspot(HotspotConfiguration config)
+        {
+            InstantiateHotspot(config, HotspotHandler.HotspotType.OpenPanelGallery, () =>
+            {
+                List<Sprite> spriteList = _locationData.gallery
+                                            .SelectMany(g => g.content_images)
+                                            .Select(img => img.GetSpriteImage())
+                                            .Where(s => s != null)
+                                            .ToList();
+
+                _canvasManager.OpenPanel(
+                    panelType: PanelType.GalleryPhoto,
+                    data: spriteList,
+                    callback: null,
+                    onClosePanel: null
+                );
+            });
         }
 
         private Action GenerateNavigationActionByType(NavigationSetting settings)

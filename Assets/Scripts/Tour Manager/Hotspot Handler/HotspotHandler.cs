@@ -124,6 +124,7 @@ namespace Tour360TelkomCorpu.HotspotHandler
             }
             else
             {
+                m_targetPosition.gameObject.name = $"[TargetPosition] for hotspot {_textButton.text}";
                 m_targetPosition.transform.position = position;
                 m_targetPosition.SetActive(true);
 

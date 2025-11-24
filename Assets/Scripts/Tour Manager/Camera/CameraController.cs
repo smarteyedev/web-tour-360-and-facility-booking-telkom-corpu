@@ -29,7 +29,7 @@ namespace Tour360TelkomCorpu.TourManager
         private float verticalAngle = 0f;
 
         [Header("Auto Rotate")]
-        [SerializeField] private bool autoRotate = false;
+        [SerializeField] private bool autoRotate = true;
         [SerializeField] private bool autoRotateClockwise = true;
         [SerializeField] private float autoRotateSpeed = 5f;
 
@@ -69,9 +69,6 @@ namespace Tour360TelkomCorpu.TourManager
             HandleZoom();
         }
 
-        // ============================================================
-        //  AUTO ROTATION
-        // ============================================================
         void HandleAutoRotate()
         {
             if (!autoRotate || horizontal == null) return;
@@ -80,13 +77,8 @@ namespace Tour360TelkomCorpu.TourManager
             horizontal.Rotate(0f, autoRotateSpeed * Time.deltaTime * dir, 0f, Space.Self);
         }
 
-        // ============================================================
-        //  MANUAL ROTATION
-        // ============================================================
-
         private float m_holdTime = 0f;
-        private float m_holdThreshold = .5f;
-        private float m_moveThreshold = 0.1f;
+
         void HandleManualRotation()
         {
             if (Input.GetMouseButtonDown(0))
@@ -103,18 +95,12 @@ namespace Tour360TelkomCorpu.TourManager
                 // hitung pergerakan mouse
                 Vector3 deltaHold = Input.mousePosition - lastMousePos;
 
-                bool isMoving = deltaHold.sqrMagnitude > m_moveThreshold * m_moveThreshold;
-                bool holdLongEnough = m_holdTime >= m_holdThreshold;
+                bool isMoving = deltaHold.sqrMagnitude > 0.1f * 0.1f;
+                bool holdLongEnough = m_holdTime >= .5f;
 
-                // ---------------------------
-                // CONDITION YANG ANDA MINTA
-                // ---------------------------
                 if (holdLongEnough && isMoving)
                 {
                     autoRotate = false;
-                    applyingInertia = false;
-                    inertiaVelocity = Vector2.zero;
-                    return; // <<==== KELUAR!
                 }
 
                 // rotasi normal
@@ -139,9 +125,6 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
-        // ============================================================
-        //  INERTIA
-        // ============================================================
         void HandleInertia()
         {
             if (!applyingInertia) return;
@@ -158,9 +141,6 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
-        // ============================================================
-        //  ROTATION CORE
-        // ============================================================
         void ApplyRotation(Vector2 delta)
         {
             if (horizontal != null)
@@ -176,9 +156,6 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
-        // ============================================================
-        //  ZOOM
-        // ============================================================
         void HandleZoom()
         {
             float scroll = Input.GetAxis("Mouse ScrollWheel");
