@@ -13,6 +13,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [Header("Component Menu Bar")]
         [SerializeField] private TextMeshProUGUI _textLocationName;
         [SerializeField] private Button _buttonOpenPanelInformation;
+        [SerializeField] private Button _buttonAutoRotation;
 
         public LoadingScreenHandler loadingScreen;
         [SerializeField] private List<MonoBehaviour> _panelComponentList;
@@ -22,11 +23,6 @@ namespace Tour360TelkomCorpu.CanvasManager
         private void Awake()
         {
             SetupPanelDict();
-        }
-
-        private void Start()
-        {
-
         }
 
         private void SetupPanelDict()
@@ -64,7 +60,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 #endif
         }
 
-        public void OpenPanel(PanelType panelType, object data, Action<string> callback)
+        public void OpenPanel(PanelType panelType, object data, Action<string> callback, Action onClosePanel)
         {
             if (data == null)
             {
@@ -78,7 +74,13 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             if (m_panelControllerDictionary.TryGetValue(panelType, out var panel))
             {
-                panel.ShowPanel(data, callback);
+                panel.ShowPanel(data, callback, () =>
+                {
+                    onClosePanel?.Invoke();
+
+                    panel.HidePanel();
+                    m_currentActivePanel.Remove(panelType);
+                });
 
                 m_currentActivePanel.Add(panelType, panel);
                 Debug.Log($"CanvasManager: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
@@ -109,7 +111,18 @@ namespace Tour360TelkomCorpu.CanvasManager
         public void SetLocationPlank(string locationName, Action onClickPanelInfo)
         {
             _textLocationName.text = locationName;
+            _buttonOpenPanelInformation.onClick.RemoveAllListeners();
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
+        }
+
+        public bool AnyPanelOpenNow()
+        {
+            return m_currentActivePanel.Count > 0 && m_currentActivePanel != null;
+        }
+
+        public void SetupButtonAutoRotation(Action onClick)
+        {
+            _buttonAutoRotation.onClick.AddListener(() => onClick?.Invoke());
         }
     }
 }

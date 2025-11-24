@@ -52,8 +52,9 @@ namespace Tour360TelkomCorpu.TourManager
                                 data: data,
                                 callback: (msg) =>
                                     {
-                                        _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, data, (documentId) => GetTelkomCorpuDataMaster(documentId));
-                                    }
+                                        _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, data, (documentId) => GetTelkomCorpuDataMaster(documentId), null);
+                                    },
+                                onClosePanel: null
                             );
                         },
                             (progress) => { /* Debug.Log($"{progress}") */ },
@@ -86,8 +87,6 @@ namespace Tour360TelkomCorpu.TourManager
 
                     SetupLocationAsset(_currentLocationIndex);
                     m_isTryToLoadingAsset = false;
-
-                    _cameraController.isFreezeCamera = false;
                 },
                 _onError: () =>
                 {
@@ -112,6 +111,7 @@ namespace Tour360TelkomCorpu.TourManager
                 onValidStart: () =>
                 {
                     HideHotspot();
+                    _canvasManager.CloseAllPanel();
                     m_isTryToLoadingAsset = true;
                 },
                 onDone: (data) =>
@@ -133,13 +133,22 @@ namespace Tour360TelkomCorpu.TourManager
                             switch (_locationData.locationType)
                             {
                                 case LocationType.DRONE:
-                                    Debug.Log($"[Tour Manager]: Show drone location maps");
+                                    FormatPanelLocationMapsAsset dMapsDrone = new FormatPanelLocationMapsAsset();
+                                    dMapsDrone.mapsSprite = _locationData.maps_image.GetSpriteImage();
+                                    dMapsDrone.DescriptionSprite = _locationData.description_image.GetSpriteImage();
+                                    _canvasManager.OpenPanel(PanelType.DroneDescription, dMapsDrone, null, null);
                                     break;
                                 case LocationType.BUILDING:
-                                    Debug.Log($"[Tour Manager]: Show Building location maps");
+                                    FormatPanelLocationMapsAsset dMapsBuilding = new FormatPanelLocationMapsAsset();
+                                    dMapsBuilding.mapsSprite = _locationData.maps_image.GetSpriteImage();
+                                    dMapsBuilding.DescriptionSprite = _locationData.description_image.GetSpriteImage();
+                                    _canvasManager.OpenPanel(PanelType.BuildingDescription, dMapsBuilding, null, null);
                                     break;
                                 case LocationType.FACILITY:
-                                    Debug.Log($"[Tour Manager]: Show Facility description");
+                                    FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
+                                    dFacility.descriptionText = _locationData.description_text;
+                                    dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
+                                    _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, null, null);
                                     break;
                             }
                         });
@@ -154,17 +163,79 @@ namespace Tour360TelkomCorpu.TourManager
                         {
                             foreach (var item in _locationData.gallery)
                             {
-                                InstantiateHotspot(item.hotspot_configuration, HotspotHandler.HotspotType.OpenPanelGallery, () =>
+                                if (m_hotspotPooling.TryGetValue(HotspotHandler.HotspotType.OpenPanelGallery, out var list) && list != null)
                                 {
-                                    List<Sprite> spriteList = _locationData.gallery
-                                                                .SelectMany(g => g.content_images)
-                                                                .Select(img => img.GetSpriteImage())
-                                                                .Where(s => s != null)
-                                                                .ToList();
+                                    var tHotspot = list.FirstOrDefault(h => !h.gameObject.activeSelf);
 
-                                    _canvasManager.OpenPanel(PanelType.GalleryPhoto, spriteList, null);
-                                    _cameraController.isFreezeCamera = true;
-                                });
+                                    if (tHotspot != null)
+                                    {
+                                        Vector3 targetPosition = _sphereController.UVToWorldPosition(item.hotspot_configuration.coordinate_x, item.hotspot_configuration.coordinate_y);
+
+                                        tHotspot.SetupHotspot(
+                                            hotspotName: item.hotspot_configuration.hotspot_title,
+                                            iconSprite: item.hotspot_configuration.hotspot_image.GetSpriteImage(),
+                                            action: () =>
+                                            {
+
+                                                List<Sprite> spriteList = _locationData.gallery
+                                                    .SelectMany(g => g.content_images)
+                                                    .Select(img => img.GetSpriteImage())
+                                                    .Where(s => s != null)
+                                                    .ToList();
+
+                                                _canvasManager.OpenPanel(
+                                                panelType: PanelType.GalleryPhoto,
+                                                data: spriteList,
+                                                callback: null,
+                                                onClosePanel: null
+                                            );
+                                            },
+                                            position: targetPosition,
+                                            canvas: _canvasManager.GetComponent<Canvas>(),
+                                            rct: _canvasManager.GetComponent<RectTransform>(),
+                                            cam: _cameraController.cam
+                                        );
+
+                                        tHotspot.gameObject.SetActive(true);
+                                    }
+                                    else
+                                    {
+                                        InstantiateHotspot(item.hotspot_configuration, HotspotHandler.HotspotType.OpenPanelGallery, () =>
+                                        {
+                                            List<Sprite> spriteList = _locationData.gallery
+                                                                        .SelectMany(g => g.content_images)
+                                                                        .Select(img => img.GetSpriteImage())
+                                                                        .Where(s => s != null)
+                                                                        .ToList();
+
+                                            _canvasManager.OpenPanel(
+                                                panelType: PanelType.GalleryPhoto,
+                                                data: spriteList,
+                                                callback: null,
+                                                onClosePanel: null
+                                            );
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    InstantiateHotspot(item.hotspot_configuration, HotspotHandler.HotspotType.OpenPanelGallery, () =>
+                                    {
+                                        List<Sprite> spriteList = _locationData.gallery
+                                                                    .SelectMany(g => g.content_images)
+                                                                    .Select(img => img.GetSpriteImage())
+                                                                    .Where(s => s != null)
+                                                                    .ToList();
+
+                                        _canvasManager.OpenPanel(
+                                            panelType: PanelType.GalleryPhoto,
+                                            data: spriteList,
+                                            callback: null,
+                                            onClosePanel: null
+                                        );
+                                    });
+                                }
+
                             }
                         }
 

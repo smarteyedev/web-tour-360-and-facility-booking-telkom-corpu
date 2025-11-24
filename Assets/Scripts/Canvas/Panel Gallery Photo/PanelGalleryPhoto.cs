@@ -16,9 +16,9 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private RectTransform _rectContentParent;
         [SerializeField] private Image _imagePrefab;
         private List<Image> m_ImagePooling = new List<Image>();
+        [SerializeField] private Button buttonClose;
 
-
-        protected override void ShowPanel(List<Sprite> spriteList, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(List<Sprite> spriteList, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             _panelContainer.gameObject.SetActive(true);
 
@@ -46,8 +46,10 @@ namespace Tour360TelkomCorpu.CanvasManager
                 }
                 image.sprite = sprite;
             }
-        }
 
+            buttonClose.onClick.RemoveAllListeners();
+            buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
+        }
 
         public override void HidePanel()
         {

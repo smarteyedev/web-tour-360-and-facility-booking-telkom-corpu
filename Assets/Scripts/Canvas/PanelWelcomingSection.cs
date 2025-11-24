@@ -15,7 +15,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private Button _buttonStart;
 
-        protected override void ShowPanel(List<TelkomCorpuAreaCard> contentData, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(List<TelkomCorpuAreaCard> contentData, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             _panelContainer.gameObject.SetActive(true);
             _buttonStart.onClick.AddListener(() => callbackUsingDocumentId?.Invoke(""));

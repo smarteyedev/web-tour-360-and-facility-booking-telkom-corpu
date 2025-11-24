@@ -8,22 +8,15 @@ namespace Tour360TelkomCorpu.CanvasManager
     public class PanelInfoFacilityDescription : PanelController<FormatPanelDescriptionAsset, Action>
     {
         [Header("Guidance Section")]
-        [SerializeField] private FormatPanelDescriptionAsset mapsAsset;
 
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private TextMeshProUGUI _TextDescription;
         [SerializeField] private Image _ImageDetail;
+        [SerializeField] private Button buttonClose;
 
 
-        //private void Start()
-        //{
-        //    if (mapsAsset != null)
-        //        ShowPanel(mapsAsset);
-        //}
-
-
-        protected override void ShowPanel(FormatPanelDescriptionAsset descriptionAsset, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(FormatPanelDescriptionAsset descriptionAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             if (descriptionAsset == null)
             {
@@ -31,14 +24,9 @@ namespace Tour360TelkomCorpu.CanvasManager
                 return;
             }
 
-            mapsAsset = descriptionAsset;
-
             _panelContainer.SetActive(true);
 
-            Debug.Log($"[FacilityDesc] ShowPanel() -> Text: {mapsAsset.descriptionText}, Sprite: {mapsAsset.facilityDetailSprite?.name}");
-
-           
-            string finalText = mapsAsset.descriptionText;
+            string finalText = descriptionAsset.descriptionText;
 
             if (!string.IsNullOrEmpty(finalText) && finalText.Length > 1300)
             {
@@ -49,8 +37,11 @@ namespace Tour360TelkomCorpu.CanvasManager
             if (_TextDescription != null)
                 _TextDescription.text = finalText;
 
-            if (_ImageDetail != null && mapsAsset.facilityDetailSprite != null)
-                _ImageDetail.sprite = mapsAsset.facilityDetailSprite;
+            if (_ImageDetail != null && descriptionAsset.facilityDetailSprite != null)
+                _ImageDetail.sprite = descriptionAsset.facilityDetailSprite;
+
+            buttonClose.onClick.RemoveAllListeners();
+            buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
         }
 
 

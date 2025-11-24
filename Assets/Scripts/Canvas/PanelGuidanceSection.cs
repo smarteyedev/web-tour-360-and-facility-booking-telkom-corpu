@@ -18,17 +18,17 @@ namespace Tour360TelkomCorpu.CanvasManager
         private int _currentIndex = 0;
 
 
-        protected override void ShowPanel(List<Sprite> assetSpriteList, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(List<Sprite> assetSpriteList, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             if (_panelContainer != null)
             {
-                _panelContainer.SetActive(true); 
+                _panelContainer.SetActive(true);
             }
 
             if (assetSpriteList != null && assetSpriteList.Count > 0)
             {
-                m_guidanceSpriteList = assetSpriteList; 
-                _currentIndex = 0; 
+                m_guidanceSpriteList = assetSpriteList;
+                _currentIndex = 0;
 
                 SetupAsset(m_guidanceSpriteList[_currentIndex]);
             }
@@ -43,7 +43,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             if (_panelContainer != null)
             {
-                _panelContainer.SetActive(false); 
+                _panelContainer.SetActive(false);
             }
 
             if (_Imageoverlay != null)
@@ -60,7 +60,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             if (_currentIndex < totalSlides - 1)
             {
-                _currentIndex++; 
+                _currentIndex++;
                 SetupAsset(m_guidanceSpriteList[_currentIndex]);
             }
             else if (_currentIndex == totalSlides - 1)

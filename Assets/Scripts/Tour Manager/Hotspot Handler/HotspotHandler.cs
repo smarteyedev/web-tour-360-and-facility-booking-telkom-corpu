@@ -106,6 +106,8 @@ namespace Tour360TelkomCorpu.HotspotHandler
             _imageButton.sprite = iconSprite;
             _textButton.text = hotspotName;
 
+            SetupDefaultAsset(iconSprite, _textButton.color);
+
             uiCanvas = canvas;
             canvasRect = rct;
             m_cam = cam;

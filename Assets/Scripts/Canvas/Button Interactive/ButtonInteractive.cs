@@ -59,6 +59,7 @@ public class ButtonInteractive : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     protected virtual void Enable()
     {
+        SetupDefaultAsset(_imageButton.sprite, _textButton.color);
         // Set initial button state to default
         m_eventState = EventState.Default;
         OnEventStateUpdate(m_eventState);
@@ -154,6 +155,12 @@ public class ButtonInteractive : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (!_assetList.Any(x => x.eventState == EventState.Default))
         {
             _assetList.Add(defaultAsset);
+        }
+        else
+        {
+            var btn = _assetList.FirstOrDefault(x => x.eventState == EventState.Default);
+            btn.buttonSprite = buttonSprite;
+            btn.textColor = textColor;
         }
     }
 }

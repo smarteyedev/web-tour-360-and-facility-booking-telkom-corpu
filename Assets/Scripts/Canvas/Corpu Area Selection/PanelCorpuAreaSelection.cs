@@ -40,7 +40,7 @@ namespace Tour360TelkomCorpu.CanvasManager
                 _scrollRect = GetComponentInChildren<ScrollRect>();
         }
 
-        protected override void ShowPanel(List<TelkomCorpuAreaCard> cardData, Action<string> callbackUsingDocumentId = null)
+        protected override void ShowPanel(List<TelkomCorpuAreaCard> cardData, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             _panelContainer.gameObject.SetActive(true);
 
