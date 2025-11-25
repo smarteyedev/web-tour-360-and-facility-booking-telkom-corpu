@@ -13,9 +13,23 @@ namespace Tour360TelkomCorpu.TourManager
 
     public class TourManager : MonoBehaviour
     {
-        [SerializeField] private int _currentLocationIndex = 0;
+        [Header("Location Data")]
+        private int m_currentLocationIndex = 0;
         [SerializeField] private LocationDataModel _locationData = new LocationDataModel();
         [SerializeField] private List<int> _visitedLocationIndexList = new List<int>();
+
+        [Header("Configuration")]
+
+        public TargetEnvironment targetEnvironment = TargetEnvironment.Development;
+        [Serializable]
+        public enum TargetEnvironment
+        {
+            Development, Demo, Production
+        }
+
+        private bool isAlwaysShowLocationDescription = true;
+        public float minVolumeMasterAudio = 0.3f;
+        public float maxVolumeMasterAudio = 0.7f;
 
         [Header("Component References")]
         [SerializeField] private DataManager _dataManager;
@@ -36,6 +50,7 @@ namespace Tour360TelkomCorpu.TourManager
         {
             Debug.Log($"TourManager: Starting App...");
 
+            m_currentLocationIndex = 0;
             m_isTryToLoadingAsset = true;
 
             StartCoroutine(_canvasManager.loadingScreen.LoadingScreenForApiProcess(
@@ -70,8 +85,6 @@ namespace Tour360TelkomCorpu.TourManager
                     // loading process error when web request fail
                 }
             ));
-
-            _currentLocationIndex = 0;
         }
 
         public void OpenCorpuAreaSelectionPanel()
@@ -95,11 +108,11 @@ namespace Tour360TelkomCorpu.TourManager
                 _documentId: _documentId,
                 _onComplete: () =>
                 {
+                    m_isTryToLoadingAsset = false;
+
                     // loading process complete
                     _canvasManager.CloseAllPanel();
-
-                    SetupLocationAsset(_currentLocationIndex);
-                    m_isTryToLoadingAsset = false;
+                    SetupLocationAsset(m_currentLocationIndex);
                 },
                 _onError: () =>
                 {
@@ -121,7 +134,7 @@ namespace Tour360TelkomCorpu.TourManager
         {
             if (m_isTryToLoadingAsset == true) return;
 
-            SetupLocationAsset(_currentLocationIndex + 1);
+            SetupLocationAsset(m_currentLocationIndex + 1);
         }
 
         public void PreviousLocation()
@@ -152,10 +165,10 @@ namespace Tour360TelkomCorpu.TourManager
                     if (data != null)
                     {
                         _locationData = data;
-                        _currentLocationIndex = targetIndex;
+                        m_currentLocationIndex = targetIndex;
 
-                        if (_visitedLocationIndexList.Count == 0 || _currentLocationIndex != _visitedLocationIndexList[_visitedLocationIndexList.Count - 1])
-                            _visitedLocationIndexList.Add(_currentLocationIndex);
+                        if (_visitedLocationIndexList.Count == 0 || m_currentLocationIndex != _visitedLocationIndexList[_visitedLocationIndexList.Count - 1])
+                            _visitedLocationIndexList.Add(m_currentLocationIndex);
 #if UNITY_EDITOR
                         Debug.Log($"TourManager: Already Get Location {data.name} asset");
 #endif
@@ -166,32 +179,12 @@ namespace Tour360TelkomCorpu.TourManager
                             onStartTransition: null,
                             onFinishTransition: () =>
                             {
-                                _canvasManager.SetLocationPlank(_locationData.name, () =>
-                                {
-                                    if (m_isTryToLoadingAsset == true) return;
+                                _canvasManager.SetLocationPlank(_locationData.name, GenerateShowLocationDescriptionAction());
 
-                                    switch (_locationData.locationType)
-                                    {
-                                        case LocationType.DRONE:
-                                            FormatPanelLocationMapsAsset dMapsDrone = new FormatPanelLocationMapsAsset();
-                                            dMapsDrone.mapsSprite = _locationData.maps_image.GetSpriteImage();
-                                            dMapsDrone.DescriptionSprite = _locationData.description_image.GetSpriteImage();
-                                            _canvasManager.OpenPanel(PanelType.DroneDescription, dMapsDrone, null, null);
-                                            break;
-                                        case LocationType.BUILDING:
-                                            FormatPanelLocationMapsAsset dMapsBuilding = new FormatPanelLocationMapsAsset();
-                                            dMapsBuilding.mapsSprite = _locationData.maps_image.GetSpriteImage();
-                                            dMapsBuilding.DescriptionSprite = _locationData.description_image.GetSpriteImage();
-                                            _canvasManager.OpenPanel(PanelType.BuildingDescription, dMapsBuilding, null, null);
-                                            break;
-                                        case LocationType.FACILITY:
-                                            FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
-                                            dFacility.descriptionText = _locationData.description_text;
-                                            dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
-                                            _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, null, null);
-                                            break;
-                                    }
-                                });
+                                if (isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
+                                {
+                                    GenerateShowLocationDescriptionAction()?.Invoke();
+                                }
 
                                 if (_locationData.locationType == LocationType.FACILITY && _locationData.gallery.Count > 0)
                                 {
@@ -210,7 +203,6 @@ namespace Tour360TelkomCorpu.TourManager
                                                     iconSprite: item.hotspot_configuration.hotspot_image.GetSpriteImage(),
                                                     action: () =>
                                                     {
-
                                                         List<Sprite> spriteList = _locationData.gallery
                                                             .SelectMany(g => g.content_images)
                                                             .Select(img => img.GetSpriteImage())
@@ -218,11 +210,11 @@ namespace Tour360TelkomCorpu.TourManager
                                                             .ToList();
 
                                                         _canvasManager.OpenPanel(
-                                                        panelType: PanelType.GalleryPhoto,
-                                                        data: spriteList,
-                                                        callback: null,
-                                                        onClosePanel: null
-                                                    );
+                                                            panelType: PanelType.GalleryPhoto,
+                                                            data: spriteList,
+                                                            callback: null,
+                                                            onClosePanel: null
+                                                        );
                                                     },
                                                     position: targetPosition,
                                                     canvas: _canvasManager.GetComponent<Canvas>(),
@@ -387,6 +379,47 @@ namespace Tour360TelkomCorpu.TourManager
 
                 case TargetHotspot.PANEL_NAVIGATION:
                     result = () => Debug.Log($"[TourManager]: Open Panel Navigation");
+                    break;
+            }
+
+            return result;
+        }
+
+        private Action GenerateShowLocationDescriptionAction()
+        {
+            Action result = null;
+
+            switch (_locationData.locationType)
+            {
+                case LocationType.DRONE:
+                    result = () =>
+                    {
+                        if (m_isTryToLoadingAsset == true) return;
+                        FormatPanelLocationMapsAsset dMapsDrone = new FormatPanelLocationMapsAsset();
+                        dMapsDrone.mapsSprite = _locationData.maps_image.GetSpriteImage();
+                        dMapsDrone.DescriptionSprite = _locationData.description_image.GetSpriteImage();
+                        _canvasManager.OpenPanel(PanelType.DroneDescription, dMapsDrone, null, null);
+                    };
+                    break;
+                case LocationType.BUILDING:
+                    result = () =>
+                    {
+                        if (m_isTryToLoadingAsset == true) return;
+                        FormatPanelLocationMapsAsset dMapsBuilding = new FormatPanelLocationMapsAsset();
+                        dMapsBuilding.mapsSprite = _locationData.maps_image.GetSpriteImage();
+                        dMapsBuilding.DescriptionSprite = _locationData.description_image.GetSpriteImage();
+                        _canvasManager.OpenPanel(PanelType.BuildingDescription, dMapsBuilding, null, null);
+                    };
+                    break;
+                case LocationType.FACILITY:
+                    result = () =>
+                    {
+                        if (m_isTryToLoadingAsset == true) return;
+                        FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
+                        dFacility.descriptionText = _locationData.description_text;
+                        dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
+                        _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, null, null);
+                    };
                     break;
             }
 
