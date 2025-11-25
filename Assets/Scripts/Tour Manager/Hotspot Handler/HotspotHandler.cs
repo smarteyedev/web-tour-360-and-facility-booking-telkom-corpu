@@ -56,6 +56,8 @@ namespace Tour360TelkomCorpu.HotspotHandler
         {
             if (_rectTransform == null)
                 _rectTransform = GetComponent<RectTransform>();
+
+            isInteractable = false;
         }
 
         protected override void Start()
@@ -124,6 +126,7 @@ namespace Tour360TelkomCorpu.HotspotHandler
             }
             else
             {
+                m_targetPosition.gameObject.name = $"[TargetPosition] for hotspot {_textButton.text}";
                 m_targetPosition.transform.position = position;
                 m_targetPosition.SetActive(true);
 
@@ -161,6 +164,7 @@ namespace Tour360TelkomCorpu.HotspotHandler
             if (angle > maxVisibleAngle) { _canvasGroupHotspot.alpha = 0f; return; }
 
             _canvasGroupHotspot.alpha = 1f;
+            isInteractable = true;
 
             if (canvasRect != null && uiCanvas != null)
             {

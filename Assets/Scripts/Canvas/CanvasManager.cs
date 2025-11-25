@@ -14,7 +14,9 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private TextMeshProUGUI _textLocationName;
         [SerializeField] private Button _buttonOpenPanelInformation;
         [SerializeField] private Button _buttonAutoRotation;
+        [SerializeField] private GameObject _topbarDropDown;
 
+        [Header("Component References")]
         public LoadingScreenHandler loadingScreen;
         [SerializeField] private List<MonoBehaviour> _panelComponentList;
         private Dictionary<PanelType, IPanel> m_panelControllerDictionary = new Dictionary<PanelType, IPanel>();
@@ -62,14 +64,6 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         public void OpenPanel(PanelType panelType, object data, Action<string> callback, Action onClosePanel)
         {
-            if (data == null)
-            {
-#if UNITY_EDITOR
-                Debug.Log($"CanvasManager: data is null, please input data");
-#endif
-                return;
-            }
-
             CloseAllPanel();
 
             if (m_panelControllerDictionary.TryGetValue(panelType, out var panel))
@@ -123,6 +117,11 @@ namespace Tour360TelkomCorpu.CanvasManager
         public void SetupButtonAutoRotation(Action onClick)
         {
             _buttonAutoRotation.onClick.AddListener(() => onClick?.Invoke());
+        }
+
+        public void ToggleTopbarDropDown()
+        {
+            _topbarDropDown.SetActive(!_topbarDropDown.activeSelf);
         }
     }
 }

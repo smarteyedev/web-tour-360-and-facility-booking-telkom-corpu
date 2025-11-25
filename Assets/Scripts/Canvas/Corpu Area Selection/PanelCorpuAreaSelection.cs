@@ -44,6 +44,8 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             _panelContainer.gameObject.SetActive(true);
 
+            if (cardData == default) return;
+
             for (int i = 0; i < cardData.Count; i++)
             {
                 TelkomCorpuAreaCard D = cardData[i];
