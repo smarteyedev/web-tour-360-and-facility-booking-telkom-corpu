@@ -5,7 +5,7 @@ using System;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelGuidanceSection : PanelController<List<Sprite>, Action<string>>
+    public class PanelGuidanceSection : PanelController<List<Sprite>, string>
     {
 
         [Header("Guidance Section")]

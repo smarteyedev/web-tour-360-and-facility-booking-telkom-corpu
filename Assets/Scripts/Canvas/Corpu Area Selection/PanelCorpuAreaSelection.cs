@@ -8,7 +8,7 @@ using System;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelCorpuAreaSelection : PanelController<List<TelkomCorpuAreaCard>, Action>, IBeginDragHandler, IEndDragHandler
+    public class PanelCorpuAreaSelection : PanelController<List<TelkomCorpuAreaCard>, string>, IBeginDragHandler, IEndDragHandler
     {
         [Space(10f)]
         [Header("Corpu Area Selection Configuration")]

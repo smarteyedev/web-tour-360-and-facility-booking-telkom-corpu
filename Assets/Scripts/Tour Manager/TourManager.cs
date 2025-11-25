@@ -27,7 +27,7 @@ namespace Tour360TelkomCorpu.TourManager
             Development, Demo, Production
         }
 
-        private bool isAlwaysShowLocationDescription = true;
+        [SerializeField] private bool _isAlwaysShowLocationDescription = true;
         public float minVolumeMasterAudio = 0.3f;
         public float maxVolumeMasterAudio = 0.7f;
 
@@ -65,11 +65,11 @@ namespace Tour360TelkomCorpu.TourManager
                             _canvasManager.OpenPanel(
                                 panelType: PanelType.WelcomingSection,
                                 data: data,
-                                callback: (msg) =>
+                                callback: null,
+                                onClosePanel: () =>
                                     {
-                                        _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, data, (documentId) => GetTelkomCorpuDataMaster(documentId), null);
-                                    },
-                                onClosePanel: null
+                                        _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, data, (object documentId) => GetTelkomCorpuDataMaster((string)documentId), null);
+                                    }
                             );
                         },
                             (progress) => { /* Debug.Log($"{progress}") */ },
@@ -93,7 +93,7 @@ namespace Tour360TelkomCorpu.TourManager
 
             StartCoroutine(_dataManager.RequestTelkomCorpuAreaOptionContent((data) =>
             {
-                _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, null, (documentId) => GetTelkomCorpuDataMaster(documentId), null);
+                _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, null, (object documentId) => GetTelkomCorpuDataMaster((string)documentId), null);
             },
                 (progress) => { /* Debug.Log($"{progress}") */ },
                 false
@@ -181,7 +181,7 @@ namespace Tour360TelkomCorpu.TourManager
                             {
                                 _canvasManager.SetLocationPlank(_locationData.name, GenerateShowLocationDescriptionAction());
 
-                                if (isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
+                                if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
                                 {
                                     GenerateShowLocationDescriptionAction()?.Invoke();
                                 }
@@ -418,7 +418,8 @@ namespace Tour360TelkomCorpu.TourManager
                         FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
                         dFacility.descriptionText = _locationData.description_text;
                         dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
-                        _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, null, null);
+                        dFacility.isAutoShow = _isAlwaysShowLocationDescription;
+                        _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, (object newVal) => _isAlwaysShowLocationDescription = (bool)newVal, null);
                     };
                     break;
             }

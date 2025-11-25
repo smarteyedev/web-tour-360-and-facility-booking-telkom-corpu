@@ -4,7 +4,7 @@ using System;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelInfoLocationMaps : PanelController<FormatPanelLocationMapsAsset, Action>
+    public class PanelInfoLocationMaps : PanelController<FormatPanelLocationMapsAsset, string>
     {
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
