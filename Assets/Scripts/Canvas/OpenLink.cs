@@ -1,13 +1,19 @@
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 public class OpenLink : MonoBehaviour
 {
-    // Fungsi ini akan dipanggil ketika tombol di-klik
+    [DllImport("__Internal")]
+    private static extern void OpenUrlSameTab(string url);
+
     public void OpenURL(string url)
     {
-        // Application.OpenURL akan membuka URL yang diberikan 
-        // menggunakan browser default di perangkat pengguna.
+#if UNITY_WEBGL && !UNITY_EDITOR
+        OpenUrlSameTab(url);
+#else
         Application.OpenURL(url);
+#endif
+
         Debug.Log("Membuka URL: " + url);
     }
 }
