@@ -1,6 +1,5 @@
 mergeInto(LibraryManager.library, {
-    OpenUrlSameTab: function (urlPtr) {
-        var url = UTF8ToString(urlPtr);
-        window.location.href = url;
+    OpenInSameTab: function (url) {
+        window.location.href = UTF8ToString(url);
     }
 });
