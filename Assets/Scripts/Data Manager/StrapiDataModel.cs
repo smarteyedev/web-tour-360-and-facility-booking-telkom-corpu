@@ -129,7 +129,6 @@ namespace Tour360TelkomCorpu.DataManager
     public class ImageField
     {
         public string url;
-        public string name;
         public Texture2D textureImage;
 
         public Sprite GetSpriteImage()

@@ -84,7 +84,7 @@ namespace Tour360TelkomCorpu.DataManager
         {
             if (locationType != LocationType.FACILITY) return true;
 
-            return thumbnail_image != null;
+            return thumbnail_image.textureImage != null;
         }
 
         public Dictionary<Action<Texture2D>, string> GetDownloadableThumbnailImageAssetList(string baseUrl = null)
@@ -106,11 +106,11 @@ namespace Tour360TelkomCorpu.DataManager
         {
             if (locationType == LocationType.FACILITY)
             {
-                return background_360_image.textureImage != null && facility_detail_image != null;
+                return background_360_image.textureImage != null && facility_detail_image.textureImage != null;
             }
             else
             {
-                return background_360_image.textureImage != null && maps_image != null && description_image != null;
+                return background_360_image.textureImage != null && maps_image.textureImage != null && description_image.textureImage != null;
             }
         }
 

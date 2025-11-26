@@ -150,7 +150,6 @@ namespace Tour360TelkomCorpu.DataManager
           thumbnail_name
           thumbnail_image {
             url
-            name
           }
 
           # Drone Asset
@@ -159,16 +158,13 @@ namespace Tour360TelkomCorpu.DataManager
             name
             background_360_image { 
               url 
-              name
             }
             first_camera_pov
             maps_image { 
               url 
-              name
             }
             description_image { 
               url 
-              name
             }
             navigations {
               target_type
@@ -186,7 +182,6 @@ namespace Tour360TelkomCorpu.DataManager
                 coordinate_y
                 hotspot_image {
                   url
-                  name
                 }
               }
             }
@@ -203,12 +198,10 @@ namespace Tour360TelkomCorpu.DataManager
             show_on_menu_panel
             background_360_image {
               url
-              name
             }
             first_camera_pov
             thumbnail_image {
               url
-              name
             }
             thumbnail_name
             maps_image {
@@ -230,23 +223,19 @@ namespace Tour360TelkomCorpu.DataManager
               show_on_menu_panel
               background_360_image {
                 url
-                name
               }
               first_camera_pov
               thumbnail_image {
                 url
-                name
               }
               thumbnail_name
               facility_detail_image {
                 url
-                name
               }
               description_text
               gallery {
                 content_images {
                   url
-                  name
                 }
                 hotspot_configuration {
                   hotspot_title
@@ -254,7 +243,6 @@ namespace Tour360TelkomCorpu.DataManager
                   coordinate_y
                   hotspot_image {
                     url
-                    name
                   }
                 }
               }
@@ -274,7 +262,6 @@ namespace Tour360TelkomCorpu.DataManager
                   coordinate_y
                   hotspot_image {
                     url
-                    name
                   }
                 }
               }
@@ -295,7 +282,6 @@ namespace Tour360TelkomCorpu.DataManager
                 coordinate_y
                 hotspot_image {
                   url
-                  name
                 }
               }
             }
@@ -489,8 +475,7 @@ namespace Tour360TelkomCorpu.DataManager
           var pairs = loc.GetDownloadableThumbnailImageAssetList(restAPI.targetAPIConfig.baseUrl);
           foreach (var kv in pairs)
           {
-            // downloadTargets[kv.Key] = kv.Value;
-            Debug.Log($"[DataManager.cs]: item will be downloaded {kv.Value}...");
+            downloadTargets[kv.Key] = kv.Value;
           }
         }
 
