@@ -94,6 +94,7 @@ namespace Tour360TelkomCorpu.DataManager
     {
         public string name;
         public string documentId;
+        public BuildingTarget building_parent;
         public CategoryFunctionality category_functionality;
         public bool bookable_status;
         public bool show_on_menu_panel;

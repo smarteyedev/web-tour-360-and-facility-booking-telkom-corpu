@@ -5,11 +5,12 @@ using UnityEngine;
 namespace Tour360TelkomCorpu.DataManager
 {
     [Serializable]
-    public class    LocationDataModel
+    public class LocationDataModel
     {
         public string name;
         public string documentId;
         public LocationType locationType = LocationType.NONE;
+        public BuildingTarget building_parent;
         public CategoryFunctionality category_functionality;
         public bool bookable_status;
         public bool show_on_menu_panel;
@@ -63,6 +64,7 @@ namespace Tour360TelkomCorpu.DataManager
                 name = f.name,
                 documentId = f.documentId,
                 locationType = LocationType.FACILITY,
+                building_parent = f.building_parent,
                 category_functionality = f.category_functionality,
                 bookable_status = f.bookable_status,
                 show_on_menu_panel = f.show_on_menu_panel,

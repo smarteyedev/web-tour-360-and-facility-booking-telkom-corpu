@@ -204,6 +204,10 @@ query GetTelkomCorpuArea($documentId: ID!) {
       facilities_childs {
         documentId
         name
+        building_parent {
+          documentId
+          name
+        }
         category_functionality {
           functionality
           description
@@ -369,9 +373,9 @@ query GetTelkomCorpuArea($documentId: ID!) {
         yield break;
       }
 
-        onValidStart?.Invoke();
+      onValidStart?.Invoke();
 
-        LocationDataModel locationTarget = _locationDataList[locationIndex];
+      LocationDataModel locationTarget = _locationDataList[locationIndex];
 #if UNITY_EDITOR
       Debug.Log($"DataManager: Checking location {locationTarget.name} asset...");
 #endif
