@@ -439,5 +439,41 @@ namespace Tour360TelkomCorpu.TourManager
                 }
             }
         }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                OpenPanelNavigationOnBuilding();
+            }
+        }
+
+        private void OpenPanelNavigationOnBuilding()
+        {
+            /* List<LocationDataModel> data = new List<LocationDataModel>();
+            _canvasManager.OpenPanel(navType, data, null, null); */
+
+            if (_locationData.locationType == LocationType.DRONE) return;
+
+            string targetParent = _locationData.locationType == LocationType.FACILITY ? _locationData.building_parent.documentId : _locationData.documentId;
+
+            StartCoroutine(_dataManager.RequestFacilityListByBuildingParent(
+                parentDocumentId: targetParent,
+                onValidStart: () =>
+                {
+                    Debug.Log($"[{name}]: starting search for data panel navigation...");
+                },
+                onDone: (List<LocationDataModel> data) =>
+                {
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        Debug.Log($"[{name}]| navigation option {i + 1} to {data[i].thumbnail_name} & ...");
+                    }
+
+                },
+                onProgress: (float progress) => { },
+                forceRedownload: false
+            ));
+        }
     }
 }

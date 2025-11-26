@@ -30,6 +30,7 @@ namespace Tour360TelkomCorpu.DataManager
           thumbnail_name
           thumbnail_image {
             url
+            name
           }
         }
       }";
@@ -137,149 +138,170 @@ namespace Tour360TelkomCorpu.DataManager
       bool success = false;
 
       string gqlQuery = @"
-query GetTelkomCorpuArea($documentId: ID!) {
-  telkomCorpuArea(
-    documentId: $documentId
-    status: PUBLISHED
-  ) {
-    documentId
-    name
-    address
-    open_for_visitor
-    thumbnail_name
-    thumbnail_image {
-      url
-    }
-
-    # LANGSUNG LIST, BUKAN *_connection
-    drone_views {
-      documentId
-      name
-      background_360_image { 
-        url 
-      }
-      first_camera_pov
-      maps_image { 
-        url 
-      }
-      description_image { 
-        url 
-      }
-      navigations {
-        target_type
-        building_target {
+      query GetTelkomCorpuArea($documentId: ID!) {
+        telkomCorpuArea(
+          documentId: $documentId
+          status: PUBLISHED
+        ) {
           documentId
           name
-        }
-        facility_target {
-          documentId
-          name
-        }
-        hotspot_configuration {
-          hotspot_title
-          coordinate_x
-          coordinate_y
-          hotspot_image {
+          address
+          open_for_visitor
+          thumbnail_name
+          thumbnail_image {
             url
+            name
           }
-        }
-      }
-    }
 
-    # JUGA LANGSUNG LIST
-    buildings_childs {
-      documentId
-      name
-      background_360_image {
-        url
-      }
-      first_camera_pov
-      maps_image {
-        url
-      }
-      description_image {
-        url
-      }
-
-      facilities_childs {
-        documentId
-        name
-        building_parent {
-          documentId
-          name
-        }
-        category_functionality {
-          functionality
-          description
-        }
-        bookable_status
-        show_on_menu_panel
-        background_360_image {
-          url
-        }
-        first_camera_pov
-        thumbnail_image {
-          url
-        }
-        thumbnail_name
-        facility_detail_image {
-          url
-        }
-        description_text
-        gallery {
-          content_images {
-            url
+          # Drone Asset
+          drone_views {
+            documentId
+            name
+            background_360_image { 
+              url 
+              name
+            }
+            first_camera_pov
+            maps_image { 
+              url 
+              name
+            }
+            description_image { 
+              url 
+              name
+            }
+            navigations {
+              target_type
+              building_target {
+                documentId
+                name
+              }
+              facility_target {
+                documentId
+                name
+              }
+              hotspot_configuration {
+                hotspot_title
+                coordinate_x
+                coordinate_y
+                hotspot_image {
+                  url
+                  name
+                }
+              }
+            }
           }
-          hotspot_configuration {
-            hotspot_title
-            coordinate_x
-            coordinate_y
-            hotspot_image {
+
+          # Building Asset
+          buildings_childs {
+            documentId
+            name
+            building_categories {
+              documentId
+              category_name
+            }
+            show_on_menu_panel
+            background_360_image {
               url
+              name
+            }
+            first_camera_pov
+            thumbnail_image {
+              url
+              name
+            }
+            thumbnail_name
+            maps_image {
+              url
+            }
+            description_image {
+              url
+            }
+
+            # Facility Asset
+            facilities_childs {
+              documentId
+              name
+              building_parent {
+                documentId
+                name
+              }
+              bookable_status
+              show_on_menu_panel
+              background_360_image {
+                url
+                name
+              }
+              first_camera_pov
+              thumbnail_image {
+                url
+                name
+              }
+              thumbnail_name
+              facility_detail_image {
+                url
+                name
+              }
+              description_text
+              gallery {
+                content_images {
+                  url
+                  name
+                }
+                hotspot_configuration {
+                  hotspot_title
+                  coordinate_x
+                  coordinate_y
+                  hotspot_image {
+                    url
+                    name
+                  }
+                }
+              }
+              navigations {
+                target_type
+                building_target {
+                  documentId
+                  name
+                }
+                facility_target {
+                  documentId
+                  name
+                }
+                hotspot_configuration {
+                  hotspot_title
+                  coordinate_x
+                  coordinate_y
+                  hotspot_image {
+                    url
+                    name
+                  }
+                }
+              }
+            }
+
+            # navigation in building
+            navigations {
+              target_type
+              building_target {
+                documentId
+              }
+              facility_target {
+                documentId
+              }
+              hotspot_configuration {
+                hotspot_title
+                coordinate_x
+                coordinate_y
+                hotspot_image {
+                  url
+                  name
+                }
+              }
             }
           }
         }
-        navigations {
-          target_type
-          building_target {
-            documentId
-            name
-          }
-          facility_target {
-            documentId
-            name
-          }
-          hotspot_configuration {
-            hotspot_title
-            coordinate_x
-            coordinate_y
-            hotspot_image {
-              url
-            }
-          }
-        }
-      }
-
-      navigations {
-        target_type
-        building_target {
-          documentId
-        }
-        facility_target {
-          documentId
-        }
-        hotspot_configuration {
-          hotspot_title
-          coordinate_x
-          coordinate_y
-          hotspot_image {
-            url
-          }
-        }
-      }
-    }
-  }
-}";
+      }";
 
       var body = new
       {
@@ -377,15 +399,15 @@ query GetTelkomCorpuArea($documentId: ID!) {
 
       LocationDataModel locationTarget = _locationDataList[locationIndex];
 #if UNITY_EDITOR
-      Debug.Log($"DataManager: Checking location {locationTarget.name} asset...");
+      Debug.Log($"[{name}]: Checking location {locationTarget.name} asset...");
 #endif
 
       var downloadTargets = new Dictionary<Action<Texture2D>, string>();
-      bool needDownload = forceRedownload ? true : !locationTarget.IsImageAssetDownloaded();
+      bool needDownload = forceRedownload ? true : !locationTarget.IsInformationImageAssetDownloaded();
 
       if (needDownload)
       {
-        var pairs = locationTarget.DownloadAssetList(restAPI.targetAPIConfig.baseUrl);
+        var pairs = locationTarget.GetDownloadableInformationImageAssetList(restAPI.targetAPIConfig.baseUrl);
         foreach (var kv in pairs)
         {
           downloadTargets[kv.Key] = kv.Value;
@@ -427,6 +449,82 @@ query GetTelkomCorpuArea($documentId: ID!) {
     {
       var l = _locationDataList.First((x) => x.documentId == documentId);
       return _locationDataList.IndexOf(l);
+    }
+
+    public IEnumerator RequestFacilityListByBuildingParent(
+      string parentDocumentId,
+      Action onValidStart,
+      Action<List<LocationDataModel>> onDone,
+      Action<float> onProgress = null,
+      bool forceRedownload = false
+    )
+    {
+      if (_locationDataList == null || string.IsNullOrEmpty(parentDocumentId))
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(null);
+        yield break;
+      }
+
+      onValidStart?.Invoke();
+
+      List<LocationDataModel> locationTarget = new List<LocationDataModel>();
+      locationTarget = _locationDataList
+        .Where(loc =>
+            loc.locationType == LocationType.FACILITY &&
+            loc.building_parent != null &&
+            loc.building_parent.documentId == parentDocumentId &&
+            loc.show_on_menu_panel == true)
+        .ToList();
+
+      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+      bool needDownload = forceRedownload ? true : locationTarget.Any((x) => x.IsThumbnailImageAssetDownloaded() == false);
+
+      Debug.Log($"[DataManager.cs]| need download thumbnail asset?? {needDownload}...");
+
+      if (needDownload)
+      {
+        foreach (var loc in locationTarget)
+        {
+          var pairs = loc.GetDownloadableThumbnailImageAssetList(restAPI.targetAPIConfig.baseUrl);
+          foreach (var kv in pairs)
+          {
+            // downloadTargets[kv.Key] = kv.Value;
+            Debug.Log($"[DataManager.cs]: item will be downloaded {kv.Value}...");
+          }
+        }
+
+      }
+
+      if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(locationTarget);
+        yield break;
+      }
+
+      bool finished = false;
+
+      restAPI.GetAssetTextures(
+          downloadTargets,
+          onProgress: p =>
+          {
+            onProgress?.Invoke(p);
+          },
+          onDone: fails =>
+          {
+            if (fails != null && fails.Count > 0)
+            {
+              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
+            }
+            finished = true;
+          }
+      );
+
+      yield return new WaitUntil(() => finished);
+
+      onProgress?.Invoke(1f);
+      onDone?.Invoke(locationTarget);
     }
   }
 }

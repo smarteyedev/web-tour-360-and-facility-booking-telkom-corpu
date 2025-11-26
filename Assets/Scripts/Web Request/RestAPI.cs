@@ -242,7 +242,7 @@ namespace Smarteye.RestAPI
                     else
                     {
                         Texture2D texDownloaded = DownloadHandlerTexture.GetContent(req);
-                        texDownloaded.name = System.IO.Path.GetFileName(url);
+                        texDownloaded.name = texDownloaded.name;
                         assignAction?.Invoke(texDownloaded);
                     }
 

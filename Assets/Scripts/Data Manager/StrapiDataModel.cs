@@ -81,8 +81,12 @@ namespace Tour360TelkomCorpu.DataManager
     {
         public string name;
         public string documentId;
+        public List<BuildingCategories> building_categories;
+        public bool show_on_menu_panel;
         public ImageField background_360_image;
         public int first_camera_pov;
+        public ImageField thumbnail_image;
+        public string thumbnail_name;
         public ImageField maps_image;
         public ImageField description_image;
         public List<Facility> facilities_childs;
@@ -95,7 +99,6 @@ namespace Tour360TelkomCorpu.DataManager
         public string name;
         public string documentId;
         public BuildingTarget building_parent;
-        public CategoryFunctionality category_functionality;
         public bool bookable_status;
         public bool show_on_menu_panel;
         public ImageField background_360_image;
@@ -109,10 +112,10 @@ namespace Tour360TelkomCorpu.DataManager
     }
 
     [Serializable]
-    public class CategoryFunctionality
+    public class BuildingCategories
     {
-        public string functionality;
-        public string description;
+        public string documentId;
+        public string category_name;
     }
 
     [Serializable]
@@ -126,6 +129,7 @@ namespace Tour360TelkomCorpu.DataManager
     public class ImageField
     {
         public string url;
+        public string name;
         public Texture2D textureImage;
 
         public Sprite GetSpriteImage()
