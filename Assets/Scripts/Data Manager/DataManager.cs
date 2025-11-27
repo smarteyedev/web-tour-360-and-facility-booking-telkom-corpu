@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Smarteye.RestAPI;
 using System;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Tour360TelkomCorpu.DataManager
 {
@@ -422,7 +423,7 @@ namespace Tour360TelkomCorpu.DataManager
 
       LocationDataModel locationTarget = _locationDataList[locationIndex];
 #if UNITY_EDITOR
-      Debug.Log($"[{name}]: Checking location {locationTarget.name} asset...");
+      Debug.Log($"[DataManager.cs]: Checking location {locationTarget.name} asset...");
 #endif
 
       var downloadTargets = new Dictionary<Action<Texture2D>, string>();
@@ -547,6 +548,92 @@ namespace Tour360TelkomCorpu.DataManager
 
       onProgress?.Invoke(1f);
       onDone?.Invoke(locationTarget);
+    }
+
+    public IEnumerator RequestBuildingListByCategory(
+      string categoryDocumentId,
+      Action onValidStart,
+      Action<BuildingCategory, List<BuildingCategory>, List<LocationDataModel>> result,
+      // Action<List<BuildingCategory>> categoryList,
+      // Action<List<LocationDataModel>> locationList,
+      Action<float> onProgress = null,
+      bool forceRedownload = false
+    )
+    {
+      if (!_buildingCategoryList.Any((x) => x.documentId == categoryDocumentId) || _locationDataList == null || string.IsNullOrEmpty(categoryDocumentId))
+      {
+        // Debug.Log($"[DataManager.cs]: dokumen null {_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId) == null} | location data list {_locationDataList == null} | target id {string.IsNullOrEmpty(categoryDocumentId)}");
+        onProgress?.Invoke(1f);
+        result?.Invoke(null, null, null);
+        yield break;
+      }
+
+      onValidStart?.Invoke();
+
+      // Debug.Log($"[DataManager.cs]: try to search for location with category '{categoryDocumentId}'");
+
+      List<LocationDataModel> locationTarget = new List<LocationDataModel>();
+      locationTarget = _locationDataList
+        .Where(loc =>
+            loc.locationType == LocationType.BUILDING &&
+            loc.IsHasCategory(categoryDocumentId) == true &&
+            loc.show_on_menu_panel == true)
+        .ToList();
+
+      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+      bool needDownload = forceRedownload ? true : locationTarget.Any((x) => x.IsThumbnailImageAssetDownloaded() == false);
+
+      // Debug.Log($"[DataManager.cs]| need download thumbnail asset?? {needDownload}...");
+
+      if (needDownload)
+      {
+        foreach (var loc in locationTarget)
+        {
+          var pairs = loc.GetDownloadableThumbnailImageAssetList(restAPI.targetAPIConfig.baseUrl);
+          foreach (var kv in pairs)
+          {
+            downloadTargets[kv.Key] = kv.Value;
+          }
+        }
+
+      }
+
+      if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId), _buildingCategoryList, locationTarget);
+        yield break;
+      }
+
+      bool finished = false;
+
+      restAPI.GetAssetTextures(
+          downloadTargets,
+          onProgress: p =>
+          {
+            onProgress?.Invoke(p);
+          },
+          onDone: fails =>
+          {
+            if (fails != null && fails.Count > 0)
+            {
+              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
+            }
+            finished = true;
+          }
+      );
+
+      yield return new WaitUntil(() => finished);
+
+      onProgress?.Invoke(1f);
+      result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId), _buildingCategoryList, locationTarget);
+    }
+
+    public BuildingCategory GetFirstBuildingCategoryData()
+    {
+      BuildingCategory result = _buildingCategoryList[0];
+      if (result == null) return null;
+      return _buildingCategoryList[0];
     }
   }
 }

@@ -141,7 +141,7 @@ namespace Tour360TelkomCorpu.DataManager
         {
             if (textureImage == null)
             {
-                Debug.Log($"asset is null");
+                Debug.LogWarning($"[StrapiDataModel.cs]: Asset texture from strapi is null");
                 return null;
             }
 

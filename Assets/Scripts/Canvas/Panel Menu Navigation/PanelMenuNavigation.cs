@@ -9,7 +9,7 @@ using TMPro;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelMenuNavigation : PanelController<List<LocationDataModel>, string>
+    public class PanelMenuNavigation : PanelController<FormatPaginationData, string>
     {
         [SerializeField] private List<LocationDataModel> _allData;
         private int m_itemsPerPage = 8;
@@ -34,14 +34,14 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         private Action<string> m_onClickingCardAction = null;
 
-        protected override void ShowPanel(List<LocationDataModel> contentData, Action<string> callback = null, Action onClosePanel = null)
+        protected override void ShowPanel(FormatPaginationData contentData, Action<string> callback = null, Action onClosePanel = null)
         {
             _panelContainer.gameObject.SetActive(true);
 
-            if (_allData == null || !_allData.SequenceEqual(contentData))
+            if (_allData == null || !_allData.SequenceEqual(contentData.locationDataList))
             {
                 // Simpan copy dari data baru supaya aman dari perubahan luar
-                _allData = new List<LocationDataModel>(contentData);
+                _allData = new List<LocationDataModel>(contentData.locationDataList);
             }
 
             _textPanelTitle.text = _panelIndentity == PanelType.MenuNavigationToFacility ? $"Facilities" : $"Building Category";
@@ -138,6 +138,8 @@ namespace Tour360TelkomCorpu.CanvasManager
             for (int i = 0; i < _selectionCardList.Count; i++)
             {
                 int dataIndex = startIndex + i;
+
+                // Debug.Log($"[PanelMenuNavigation.cs]: data count {_allData.Count}");
 
                 if (dataIndex < _allData.Count)
                 {

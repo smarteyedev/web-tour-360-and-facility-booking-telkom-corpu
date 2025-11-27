@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Tour360TelkomCorpu.DataManager;
 using UnityEngine;
 
 namespace Tour360TelkomCorpu.CanvasManager
@@ -22,6 +23,16 @@ namespace Tour360TelkomCorpu.CanvasManager
         public string descriptionText;
         public Sprite facilityDetailSprite;
         public bool isAutoShow;
+    }
+
+    [Serializable]
+    public class FormatPaginationData
+    {
+        public bool isUsingCategory;
+        public BuildingCategory currentCategorySelected;
+        public List<BuildingCategory> categoryList;
+        public List<LocationDataModel> locationDataList;
+        public Action<BuildingCategory> onChangeCategoryAction;
     }
 
     public abstract class PanelController<TData, TAction> : MonoBehaviour, IPanel
