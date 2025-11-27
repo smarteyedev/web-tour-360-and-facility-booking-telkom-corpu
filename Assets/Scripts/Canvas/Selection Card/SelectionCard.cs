@@ -7,15 +7,18 @@ using UnityEngine.UI;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class CorpuSelectionCard : MonoBehaviour
+    public class SelectionCard : MonoBehaviour
     {
         [Header("Component References")]
         [SerializeField] private Image _imageBackgroundCard;
         [SerializeField] private TextMeshProUGUI _textCardName;
+        [SerializeField] private Button _buttonSelectCorpuArea;
+
+        [Header("Corpu Selection | Additional Component References")]
         [SerializeField] private TextMeshProUGUI _textAddress;
         [SerializeField] private GameObject _iconLocker;
         [SerializeField] private GameObject _iconExplor;
-        [SerializeField] private Button _buttonSelectCorpuArea;
+
 
         public void SetupCard(Sprite bgCard, string cardName, string address, bool isOpenForVisitor, Action onClickAction)
         {

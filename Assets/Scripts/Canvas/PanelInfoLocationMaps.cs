@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Tour360TelkomCorpu.DataManager;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelInfoLocationMaps : PanelController<FormatPanelLocationMapsAsset, Action>
+    public class PanelInfoLocationMaps : PanelController<LocationDataModel, string>
     {
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
@@ -12,7 +13,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private Image _ImageDescription;
         [SerializeField] private Button buttonClose;
 
-        protected override void ShowPanel(FormatPanelLocationMapsAsset mapsAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
+        protected override void ShowPanel(LocationDataModel mapsAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             if (mapsAsset == null)
             {
@@ -22,11 +23,11 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             _panelContainer.SetActive(true);
 
-            if (_ImageMaps != null && mapsAsset.mapsSprite != null)
-                _ImageMaps.sprite = mapsAsset.mapsSprite;
+            if (_ImageMaps != null && mapsAsset.maps_image.GetSpriteImage() != null)
+                _ImageMaps.sprite = mapsAsset.maps_image.GetSpriteImage();
 
-            if (_ImageDescription != null && mapsAsset.DescriptionSprite != null)
-                _ImageDescription.sprite = mapsAsset.DescriptionSprite;
+            if (_ImageDescription != null && mapsAsset.description_image.GetSpriteImage() != null)
+                _ImageDescription.sprite = mapsAsset.description_image.GetSpriteImage();
 
             buttonClose.onClick.RemoveAllListeners();
             buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());

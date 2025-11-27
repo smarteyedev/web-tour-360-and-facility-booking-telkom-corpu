@@ -5,33 +5,32 @@ using System;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelInfoFacilityDescription : PanelController<FormatPanelDescriptionAsset, Action>
+    public class PanelInfoFacilityDescription : PanelController<FormatPanelDescriptionAsset, bool>
     {
         [Header("Guidance Section")]
-
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private TextMeshProUGUI _TextDescription;
         [SerializeField] private Image _ImageDetail;
-        [SerializeField] private Button buttonClose;
+        [SerializeField] private Button _buttonClose;
+        [SerializeField] private Toggle _toggleShowPanelAutomatically;
 
 
-        protected override void ShowPanel(FormatPanelDescriptionAsset descriptionAsset, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
+        protected override void ShowPanel(FormatPanelDescriptionAsset descriptionAsset, Action<bool> callback = null, Action onClosePanel = null)
         {
             if (descriptionAsset == null)
             {
-                Debug.LogWarning($"{name}: descriptionAsset kosong.");
+                Debug.LogWarning($"[{name}]: descriptionAsset kosong.");
                 return;
             }
 
             _panelContainer.SetActive(true);
 
             string finalText = descriptionAsset.descriptionText;
-
             if (!string.IsNullOrEmpty(finalText) && finalText.Length > 1300)
             {
                 finalText = finalText.Substring(0, 1300);
-                Debug.Log("[FacilityDesc] Teks dipotong");
+                //Debug.Log("[FacilityDesc] Teks dipotong");
             }
 
             if (_TextDescription != null)
@@ -40,8 +39,12 @@ namespace Tour360TelkomCorpu.CanvasManager
             if (_ImageDetail != null && descriptionAsset.facilityDetailSprite != null)
                 _ImageDetail.sprite = descriptionAsset.facilityDetailSprite;
 
-            buttonClose.onClick.RemoveAllListeners();
-            buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
+            _buttonClose.onClick.RemoveAllListeners();
+            _buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
+
+            _toggleShowPanelAutomatically.isOn = descriptionAsset.isAutoShow;
+            _toggleShowPanelAutomatically.onValueChanged.RemoveAllListeners();
+            _toggleShowPanelAutomatically.onValueChanged.AddListener((bool val) => callback?.Invoke(val));
         }
 
 

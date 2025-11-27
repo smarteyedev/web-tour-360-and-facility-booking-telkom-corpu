@@ -142,8 +142,9 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: dad20b381dc754a439f4ed6128e2f46f, type: 2}
+  m_sharedMaterial: {fileID: -2313729571082812738, guid: dad20b381dc754a439f4ed6128e2f46f,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -578,7 +579,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   hotspotType: 1
-  maxVisibleAngle: 90
+  maxVisibleAngle: 50
   hideWhenBehind: 1
   _imageOutline: {fileID: 8772013121744342757}
   _canvasGroupHotspot: {fileID: 8385647798668349530}
