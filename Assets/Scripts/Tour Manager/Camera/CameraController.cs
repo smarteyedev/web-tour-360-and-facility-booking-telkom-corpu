@@ -3,7 +3,12 @@ using UnityEngine.UI;
 
 namespace Tour360TelkomCorpu.TourManager
 {
+    using System;
+    using DG.Tweening;
     using Tour360TelkomCorpu.CanvasManager;
+
+
+
     public class CameraController : MonoBehaviour
     {
         [Header("Rotation")]
@@ -26,6 +31,7 @@ namespace Tour360TelkomCorpu.TourManager
         private bool applyingInertia = false;
 
         private Vector3 lastMousePos;
+
         private float verticalAngle = 0f;
 
         [Header("Auto Rotate")]
@@ -34,27 +40,32 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private float autoRotateSpeed = 5f;
 
         [Header("Zoom")]
-        [SerializeField] private float minFOV = 20f;
-        [SerializeField] private float maxFOV = 60f;
+        [SerializeField] private float minFOV;
+        [SerializeField] private float maxFOV;
         [SerializeField] private float zoomSmooth = 6f;
-        private float targetFOV = 60f;
+        [SerializeField] private float targetFOV;
 
         [Header("Component References")]
         public Camera cam;
-        [SerializeField] private Slider zoomSlider;
+
         [SerializeField] private CanvasManager _canvasManager;
 
         void Start()
         {
             if (cam == null) cam = Camera.main;
+           
+            StartAnimDrone(2f, 
+                () => Debug.Log("Start Animation Drone"),
+                () => Debug.Log("End Animation Drone"));
 
-            if (zoomSlider != null)
-            {
-                zoomSlider.minValue = 0;
-                zoomSlider.maxValue = 1;
-                targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
-                zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
-            }
+
+            //if (zoomSlider != null)
+            //{
+            //    zoomSlider.minValue = 0;
+            //    zoomSlider.maxValue = 1;
+            //    targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
+            //    zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
+            //}
 
             _canvasManager.SetupButtonAutoRotation(AutoRotationToggle);
         }
@@ -187,8 +198,8 @@ namespace Tour360TelkomCorpu.TourManager
                 targetFOV -= scroll * 20f;
                 targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
 
-                if (zoomSlider != null)
-                    zoomSlider.SetValueWithoutNotify(Mathf.InverseLerp(minFOV, maxFOV, targetFOV));
+                //if (zoomSlider != null)
+                //    zoomSlider.SetValueWithoutNotify(Mathf.InverseLerp(minFOV, maxFOV, targetFOV));
             }
 
             cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * zoomSmooth);
@@ -204,5 +215,66 @@ namespace Tour360TelkomCorpu.TourManager
         {
             autoRotate = !autoRotate;
         }
+
+        public void StartAnimDrone(float cameraY, Action startAnimation, Action endAnimation )
+        {
+            startAnimation?.Invoke();
+            // Convert 0–1 to 0–360
+
+            float targetYaw = (cameraY >= 0f && cameraY <= 1f) //harus ada kondisi jika cameraY diluar 0-1 dan default nya dijadikan 0 
+                ? cameraY * 360f 
+                : 0f;
+           
+            float startAngle = 80f;
+            float endAngle = 0f;
+            float startHeight = 0.6f;
+            float endHeight = -0.08f;
+            float startAnimDuration = 3f;
+
+            float t = Mathf.InverseLerp(startHeight, endHeight, 0.3f);
+            t = Mathf.Clamp01(t);
+            float thresholdTime = t * startAnimDuration;
+
+            cam.fieldOfView = Mathf.Lerp(57f, targetFOV, 0f);
+            cam.transform.localPosition = new Vector3(0f, startHeight, 0f);
+
+            horizontal.localRotation = Quaternion.Euler(0f, targetYaw, 0f);
+            cam.transform.localRotation = Quaternion.Euler(startAngle, 0f, 0f);
+
+            Sequence seq = DOTween.Sequence();
+
+            seq.Join(
+                horizontal.DOLocalRotate(
+                    new Vector3(0f, targetYaw, 0f),
+                    startAnimDuration
+                )
+                .From()                    // animate from current localRotation
+                .SetEase(Ease.InOutSine)
+            );
+
+            seq.Join(
+                cam.transform.DOLocalMoveY(endHeight, startAnimDuration)
+                .SetEase(Ease.InOutQuad)
+            );
+
+            float rotDuration = Mathf.Max(0.0001f, startAnimDuration - thresholdTime);
+
+            seq.Insert(
+                thresholdTime,
+                cam.transform.DOLocalRotate(
+                    new Vector3(0f, 0f, 0f), rotDuration
+                )
+                .SetEase(Ease.InOutSine)
+            );
+
+            seq.OnComplete(() =>
+            {
+                verticalAngle = endAngle;
+                seq.Kill();
+                endAnimation?.Invoke();
+                Debug.Log("Drone animation finished");
+            });
+        }
+
     }
 }
