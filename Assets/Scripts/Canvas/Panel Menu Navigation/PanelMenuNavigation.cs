@@ -22,7 +22,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         public override void HidePanel()
         {
-
+            _panelContainer.gameObject.SetActive(false);
         }
     }
 }

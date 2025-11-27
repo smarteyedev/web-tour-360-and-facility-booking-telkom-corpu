@@ -29,8 +29,8 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private Button _prevButton;
         [SerializeField] private Button _nextButton;
         [SerializeField] private RectTransform _rectContentParent;
-        [SerializeField] private CorpuSelectionCard _prefabCorpuSelectionCard;
-        private readonly List<CorpuSelectionCard> m_cardPooling = new List<CorpuSelectionCard>();
+        [SerializeField] private SelectionCard _prefabCorpuSelectionCard;
+        private readonly List<SelectionCard> m_cardPooling = new List<SelectionCard>();
 
         private Coroutine m_snapRoutine;
 
@@ -50,7 +50,7 @@ namespace Tour360TelkomCorpu.CanvasManager
             {
                 TelkomCorpuAreaCard D = cardData[i];
 
-                CorpuSelectionCard card;
+                SelectionCard card;
                 if (i < m_cardPooling.Count)
                 {
                     card = m_cardPooling[i];

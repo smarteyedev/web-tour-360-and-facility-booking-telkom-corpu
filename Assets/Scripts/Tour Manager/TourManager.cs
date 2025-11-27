@@ -395,20 +395,14 @@ namespace Tour360TelkomCorpu.TourManager
                     result = () =>
                     {
                         if (m_isTryToLoadingAsset == true) return;
-                        FormatPanelLocationMapsAsset dMapsDrone = new FormatPanelLocationMapsAsset();
-                        dMapsDrone.mapsSprite = _locationData.maps_image.GetSpriteImage();
-                        dMapsDrone.DescriptionSprite = _locationData.description_image.GetSpriteImage();
-                        _canvasManager.OpenPanel(PanelType.DroneDescription, dMapsDrone, null, null);
+                        _canvasManager.OpenPanel(PanelType.DroneDescription, _locationData, null, null);
                     };
                     break;
                 case LocationType.BUILDING:
                     result = () =>
                     {
                         if (m_isTryToLoadingAsset == true) return;
-                        FormatPanelLocationMapsAsset dMapsBuilding = new FormatPanelLocationMapsAsset();
-                        dMapsBuilding.mapsSprite = _locationData.maps_image.GetSpriteImage();
-                        dMapsBuilding.DescriptionSprite = _locationData.description_image.GetSpriteImage();
-                        _canvasManager.OpenPanel(PanelType.BuildingDescription, dMapsBuilding, null, null);
+                        _canvasManager.OpenPanel(PanelType.BuildingDescription, _locationData, null, null);
                     };
                     break;
                 case LocationType.FACILITY:
@@ -450,7 +444,7 @@ namespace Tour360TelkomCorpu.TourManager
                 parentDocumentId: targetParent,
                 onValidStart: () =>
                 {
-                    Debug.Log($"[{name}]: starting search for data panel navigation...");
+                    // Debug.Log($"[{name}]: starting search for data panel navigation...");
                 },
                 onDone: (List<LocationDataModel> data) =>
                 {

@@ -42,7 +42,7 @@ namespace Tour360TelkomCorpu.CanvasManager
                     if (m_panelControllerDictionary.ContainsKey(key))
                     {
 #if UNITY_EDITOR
-                        Debug.LogWarning($"[{name}]: Duplicate registration for panel key '{key}'. Existing will be kept and this one ignored. Object: {p.name}", p);
+                        Debug.LogWarning($"[CanvasManager.cs]: Duplicate registration for panel key '{key}'. Existing will be kept and this one ignored. Object: {p.name}", p);
 #endif
                         // jika ingin overwrite, gunakan panelControllerDict[key] = ip;
                         continue;
@@ -52,13 +52,13 @@ namespace Tour360TelkomCorpu.CanvasManager
                 else
                 {
 #if UNITY_EDITOR
-                    Debug.LogWarning($"[{name}]: component '{p.name}' does not implement IPanel and will be ignored.", p);
+                    Debug.LogWarning($"[CanvasManager.cs]: component '{p.name}' does not implement IPanel and will be ignored.", p);
 #endif
                 }
             }
 
 #if UNITY_EDITOR
-            Debug.Log($"[{name}]: Registered {m_panelControllerDictionary.Count} panels.");
+            Debug.Log($"[CanvasManager.cs]: Registered {m_panelControllerDictionary.Count} panels.");
 #endif
         }
 
@@ -84,11 +84,15 @@ namespace Tour360TelkomCorpu.CanvasManager
                 });
 
                 m_currentActivePanel.Add(panelType, panel);
-                Debug.Log($"CanvasManager: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
+#if UNITY_EDITOR
+                Debug.Log($"[CanvasManager.cs]: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
+#endif
             }
             else
             {
-                Debug.LogError($"CanvasManager: panel {panelType.ToString()} is not registered");
+#if UNITY_EDITOR
+                Debug.LogError($"[CanvasManager.cs]: panel {panelType.ToString()} is not registered");
+#endif
             }
 
 
@@ -111,7 +115,7 @@ namespace Tour360TelkomCorpu.CanvasManager
                 }
 
 #if UNITY_EDITOR
-                Debug.Log($"CanvasManager: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
+                Debug.Log($"[CanvasManager.cs]: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
 #endif
 
             }

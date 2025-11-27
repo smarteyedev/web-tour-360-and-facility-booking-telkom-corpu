@@ -466,7 +466,7 @@ namespace Tour360TelkomCorpu.DataManager
       var downloadTargets = new Dictionary<Action<Texture2D>, string>();
       bool needDownload = forceRedownload ? true : locationTarget.Any((x) => x.IsThumbnailImageAssetDownloaded() == false);
 
-      Debug.Log($"[DataManager.cs]| need download thumbnail asset?? {needDownload}...");
+      // Debug.Log($"[DataManager.cs]| need download thumbnail asset?? {needDownload}...");
 
       if (needDownload)
       {
