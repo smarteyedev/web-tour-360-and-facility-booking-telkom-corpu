@@ -12,15 +12,18 @@ namespace Tour360TelkomCorpu.DataManager
   {
     [Header("Data Manager | Cache Data Asset")]
     [SerializeField] private List<TelkomCorpuAreaCard> _telkomCorpuAreaOptionList = new();
+    [SerializeField] private List<BuildingCategory> _buildingCategoryList = new();
     [SerializeField] private TelkomCorpuAreaCard _telkomCorpuAreaSelected = new();
     [SerializeField] private List<LocationDataModel> _locationDataList = new();
 
     public IEnumerator GetTelkomCorpuAreaOptionData(Action<bool> onResult, string documentId)
     {
-      bool isDone = false;
-      bool success = false;
+      bool areaOptionProcess = false;
+      bool areaOptionResult = false;
 
-      string gqlQuery = @"
+      bool categoryProcess = false;
+
+      string gqlQueryCorpuSelection = @"
       query CorpuAreaSelection{
         telkomCorpuAreas {
           documentId
@@ -35,12 +38,12 @@ namespace Tour360TelkomCorpu.DataManager
         }
       }";
 
-      var body = new
+      var bodyCorpuSelection = new
       {
-        query = gqlQuery,
+        query = gqlQueryCorpuSelection,
       };
 
-      string jsonBody = JsonConvert.SerializeObject(body);
+      string jsonBody = JsonConvert.SerializeObject(bodyCorpuSelection);
 
       restAPI.PostWithHeaderAndBody(
         _endpointTitle: "HitStrapi",
@@ -52,20 +55,54 @@ namespace Tour360TelkomCorpu.DataManager
           if (_telkomCorpuAreaOptionList.Count > 0) _telkomCorpuAreaOptionList.Clear();
           _telkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
 
-          success = true;
-          isDone = true;
+          areaOptionProcess = true;
+          areaOptionResult = true;
         },
         _err: (errResult) =>
         {
 
-          success = false;
-          isDone = true;
+          areaOptionProcess = true;
+          areaOptionResult = false;
         });
 
-      while (!isDone)
+      string gqlQueryBuildingCategory = @"
+              query Categories {
+                categories {
+                  category_name
+                  documentId
+                }
+              }";
+
+      var bodyCorpuBuildingCategory = new
+      {
+        query = gqlQueryBuildingCategory,
+      };
+
+      string jsonBodyBuildingCategory = JsonConvert.SerializeObject(bodyCorpuBuildingCategory);
+
+      restAPI.PostWithHeaderAndBody(
+        _endpointTitle: "HitStrapi",
+      _body: jsonBodyBuildingCategory,
+      _success: (result) =>
+      {
+        var response = JsonConvert.DeserializeObject<GqlResponse<Categories>>(result.ToString());
+
+        if (_buildingCategoryList.Count > 0) _buildingCategoryList.Clear();
+        _buildingCategoryList = response.data.categories;
+
+        categoryProcess = true;
+      },
+      _err: (errResult) =>
+      {
+        categoryProcess = true;
+      });
+
+      yield return new WaitUntil(() => categoryProcess && areaOptionProcess);
+
+      while (!areaOptionProcess)
         yield return null;
 
-      onResult?.Invoke(success);
+      onResult?.Invoke(areaOptionResult);
     }
 
     // download request texture

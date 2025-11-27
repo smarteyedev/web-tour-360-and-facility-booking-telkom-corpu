@@ -23,7 +23,7 @@ namespace Tour360TelkomCorpu.DataManager
         public List<NavigationSetting> navigations;
 
         [Header("Additional Property for Drone and Building")]
-        public List<BuildingCategories> building_categories;
+        public List<BuildingCategory> building_categories;
         public ImageField maps_image;
         public ImageField description_image;
 

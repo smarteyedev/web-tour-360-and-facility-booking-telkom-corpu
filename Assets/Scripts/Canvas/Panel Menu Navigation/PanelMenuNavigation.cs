@@ -21,6 +21,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private Button _buttonClose;
         [SerializeField] private List<SelectionCard> _selectionCardList;
+        [SerializeField] private TextMeshProUGUI _textPanelTitle;
 
         [Space(8f)]
         [SerializeField] private Button _buttonPrev;
@@ -29,7 +30,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private Transform _pageButtonsParent;
         [SerializeField] private Sprite _pageButtonActiveSprite;
         [SerializeField] private Sprite _pageButtonNonactiveSprite;
-        private readonly List<Button> _pageButtons = new List<Button>();
+        private readonly List<Button> m_pageButtons = new List<Button>();
 
         private Action<string> m_onClickingCardAction = null;
 
@@ -42,6 +43,8 @@ namespace Tour360TelkomCorpu.CanvasManager
                 // Simpan copy dari data baru supaya aman dari perubahan luar
                 _allData = new List<LocationDataModel>(contentData);
             }
+
+            _textPanelTitle.text = _panelIndentity == PanelType.MenuNavigationToFacility ? $"Facilities" : $"Building Category";
 
             // Hitung jumlah halaman
             m_totalPages = Mathf.CeilToInt(_allData.Count / (float)m_itemsPerPage);
@@ -76,8 +79,8 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             if (m_totalPages <= 0)
             {
-                for (int i = 0; i < _pageButtons.Count; i++)
-                    _pageButtons[i].gameObject.SetActive(false);
+                for (int i = 0; i < m_pageButtons.Count; i++)
+                    m_pageButtons[i].gameObject.SetActive(false);
 
                 return;
             }
@@ -87,13 +90,13 @@ namespace Tour360TelkomCorpu.CanvasManager
             for (int i = 0; i < m_totalPages; i++)
             {
                 int pageIndex = i;
-                if (i >= _pageButtons.Count)
+                if (i >= m_pageButtons.Count)
                 {
                     var newBtn = Instantiate(_pageButtonPrefab, _pageButtonsParent);
-                    _pageButtons.Add(newBtn);
+                    m_pageButtons.Add(newBtn);
                 }
 
-                Button pageBtn = _pageButtons[i];
+                Button pageBtn = m_pageButtons[i];
                 pageBtn.gameObject.SetActive(true);
 
                 var btnText = pageBtn.GetComponentInChildren<TextMeshProUGUI>();
@@ -106,8 +109,8 @@ namespace Tour360TelkomCorpu.CanvasManager
                 pageBtn.transform.SetSiblingIndex(i + 1);
             }
 
-            for (int i = m_totalPages; i < _pageButtons.Count; i++)
-                _pageButtons[i].gameObject.SetActive(false);
+            for (int i = m_totalPages; i < m_pageButtons.Count; i++)
+                m_pageButtons[i].gameObject.SetActive(false);
 
             _buttonNext.transform.SetAsLastSibling();
         }
@@ -162,10 +165,10 @@ namespace Tour360TelkomCorpu.CanvasManager
             _buttonPrev.interactable = m_currentPage > 0;
             _buttonNext.interactable = m_currentPage < m_totalPages - 1;
 
-            for (int i = 0; i < _pageButtons.Count; i++)
+            for (int i = 0; i < m_pageButtons.Count; i++)
             {
                 Sprite buttonSprite = i == m_currentPage ? _pageButtonActiveSprite : _pageButtonNonactiveSprite;
-                _pageButtons[i].image.sprite = buttonSprite;
+                m_pageButtons[i].image.sprite = buttonSprite;
             }
         }
 

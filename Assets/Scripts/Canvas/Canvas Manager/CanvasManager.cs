@@ -117,7 +117,6 @@ namespace Tour360TelkomCorpu.CanvasManager
 #if UNITY_EDITOR
                 Debug.Log($"[CanvasManager.cs]: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
 #endif
-
             }
         }
 
