@@ -463,7 +463,7 @@ namespace Tour360TelkomCorpu.TourManager
                     data.locationDataList = locations;
                     data.onChangeCategoryAction = null;
 
-                    _canvasManager.OpenPanel(PanelType.MenuNavigationToFacility, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
+                    _canvasManager.OpenPanel(PanelType.MenuNavigation, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
 
                     m_isTryToLoadingAsset = false;
                 },
@@ -501,7 +501,7 @@ namespace Tour360TelkomCorpu.TourManager
 
                     // Debug.Log($"[TourManager.cs]| jumlah data {data.locationDataList.Count}");
 
-                    _canvasManager.OpenPanel(PanelType.MenuNavigationToFacility, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
+                    _canvasManager.OpenPanel(PanelType.MenuNavigation, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
 
                     m_isTryToLoadingAsset = false;
                 },

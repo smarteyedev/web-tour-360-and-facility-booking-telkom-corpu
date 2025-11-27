@@ -158,7 +158,7 @@ namespace Tour360TelkomCorpu.DataManager
           {
             if (fails != null && fails.Count > 0)
             {
-              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
+              foreach (var f in fails) Debug.LogWarning($"[DataManager.cs]: Download fail: {f}");
             }
             finished = true;
           }
@@ -400,7 +400,7 @@ namespace Tour360TelkomCorpu.DataManager
       _locationDataList = result;
 
 #if UNITY_EDITOR
-      Debug.Log($"DataManager: Total location Data list: {_locationDataList.Count}");
+      Debug.Log($"[DataManager.cs]: Total location Data list: {_locationDataList.Count}");
 #endif
     }
 
@@ -457,7 +457,7 @@ namespace Tour360TelkomCorpu.DataManager
           {
             if (fails != null && fails.Count > 0)
             {
-              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
+              foreach (var f in fails) Debug.LogWarning($"[DataManager.cs]: Download fail: {f}");
             }
             finished = true;
           }
@@ -538,7 +538,7 @@ namespace Tour360TelkomCorpu.DataManager
           {
             if (fails != null && fails.Count > 0)
             {
-              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
+              foreach (var f in fails) Debug.LogWarning($"[DataManager.cs]: Download fail: {f}");
             }
             finished = true;
           }
@@ -617,7 +617,7 @@ namespace Tour360TelkomCorpu.DataManager
           {
             if (fails != null && fails.Count > 0)
             {
-              foreach (var f in fails) Debug.LogWarning($"DataManager: Download fail: {f}");
+              foreach (var f in fails) Debug.LogWarning($"[DataManager.cs]: Download fail: {f}");
             }
             finished = true;
           }

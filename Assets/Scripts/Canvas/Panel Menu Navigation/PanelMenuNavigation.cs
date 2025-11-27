@@ -11,7 +11,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 {
     public class PanelMenuNavigation : PanelController<FormatPaginationData, string>
     {
-        [SerializeField] private List<LocationDataModel> _allData;
+        [SerializeField] private FormatPaginationData _allData;
         private int m_itemsPerPage = 8;
         private int m_currentPage = 0;
         private int m_totalPages = 0;
@@ -38,16 +38,17 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             _panelContainer.gameObject.SetActive(true);
 
-            if (_allData == null || !_allData.SequenceEqual(contentData.locationDataList))
+            if (_allData == null || !_allData.locationDataList.SequenceEqual(contentData.locationDataList))
             {
                 // Simpan copy dari data baru supaya aman dari perubahan luar
-                _allData = new List<LocationDataModel>(contentData.locationDataList);
+                // _allData.locationDataList = new List<LocationDataModel>(contentData.locationDataList);
+                _allData = contentData;
             }
 
-            _textPanelTitle.text = _panelIndentity == PanelType.MenuNavigationToFacility ? $"Facilities" : $"Building Category";
+            _textPanelTitle.text = _panelIndentity == PanelType.MenuNavigation ? $"Facilities" : $"Building Category";
 
             // Hitung jumlah halaman
-            m_totalPages = Mathf.CeilToInt(_allData.Count / (float)m_itemsPerPage);
+            m_totalPages = Mathf.CeilToInt(_allData.locationDataList.Count / (float)m_itemsPerPage);
             m_currentPage = 0;
 
             // Setup UI
@@ -141,11 +142,11 @@ namespace Tour360TelkomCorpu.CanvasManager
 
                 // Debug.Log($"[PanelMenuNavigation.cs]: data count {_allData.Count}");
 
-                if (dataIndex < _allData.Count)
+                if (dataIndex < _allData.locationDataList.Count)
                 {
                     // Ada data untuk card ini
                     _selectionCardList[i].gameObject.SetActive(true);
-                    LocationDataModel data = _allData[dataIndex];
+                    LocationDataModel data = _allData.locationDataList[dataIndex];
 
                     // Asumsikan SelectionCard punya fungsi Setup / BindData
                     _selectionCardList[i].SetupCard(

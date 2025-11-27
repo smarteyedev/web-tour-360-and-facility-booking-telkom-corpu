@@ -7,7 +7,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 {
     public enum PanelType
     {
-        None, WelcomingSection, CorpuAreaSelection, GuidanceSection, BuildingDescription, FacilityDescription, GalleryPhoto, MenuNavigationCategory, MenuNavigationToFacility, BookingSection, DroneDescription
+        None, WelcomingSection, CorpuAreaSelection, GuidanceSection, BuildingDescription, FacilityDescription, GalleryPhoto, MenuNavigation, BookingSection, DroneDescription
     }
 
     public interface IPanel
