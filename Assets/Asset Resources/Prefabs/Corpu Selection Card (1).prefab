@@ -214,10 +214,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _imageBackgroundCard: {fileID: 1296101634481883785}
   _textCardName: {fileID: 5991456921085947684}
+  _buttonSelectCorpuArea: {fileID: 7699966944162679205}
   _textAddress: {fileID: 717891095055027311}
   _iconLocker: {fileID: 1750086241029308743}
   _iconExplor: {fileID: 4735609245383365278}
-  _buttonSelectCorpuArea: {fileID: 7699966944162679205}
 --- !u!114 &7699966944162679205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -543,7 +543,6 @@ GameObject:
   - component: {fileID: 638558565928689761}
   - component: {fileID: 7589052218865246238}
   - component: {fileID: 4289642092259165368}
-  - component: {fileID: 488840531142930312}
   m_Layer: 5
   m_Name: 'Button: Explor / Select Area'
   m_TagString: Untagged
@@ -608,50 +607,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &488840531142930312
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4735609245383365278}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 4289642092259165368}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &7452358807440669024
 GameObject:
   m_ObjectHideFlags: 0

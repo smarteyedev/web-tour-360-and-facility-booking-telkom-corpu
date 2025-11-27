@@ -453,7 +453,7 @@ namespace Tour360TelkomCorpu.TourManager
                         Debug.Log($"[{name}]| navigation option {i + 1} to {data[i].thumbnail_name} & ...");
                     } */
 
-                    _canvasManager.OpenPanel(PanelType.MenuNavigationToFacility, data, null, null);
+                    _canvasManager.OpenPanel(PanelType.MenuNavigationToFacility, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
                 },
                 onProgress: (float progress) => { },
                 forceRedownload: false

@@ -21,21 +21,27 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private Button _buttonClose;
         [SerializeField] private List<SelectionCard> _selectionCardList;
+
+        [Space(8f)]
         [SerializeField] private Button _buttonPrev;
         [SerializeField] private Button _buttonNext;
         [SerializeField] private Button _pageButtonPrefab;
         [SerializeField] private Transform _pageButtonsParent;
+        [SerializeField] private Sprite _pageButtonActiveSprite;
+        [SerializeField] private Sprite _pageButtonNonactiveSprite;
         private readonly List<Button> _pageButtons = new List<Button>();
+
+        private Action<string> m_onClickingCardAction = null;
 
         protected override void ShowPanel(List<LocationDataModel> contentData, Action<string> callback = null, Action onClosePanel = null)
         {
             _panelContainer.gameObject.SetActive(true);
 
-            /* if (_allData == null || !_allData.SequenceEqual(contentData))
+            if (_allData == null || !_allData.SequenceEqual(contentData))
             {
                 // Simpan copy dari data baru supaya aman dari perubahan luar
                 _allData = new List<LocationDataModel>(contentData);
-            } */
+            }
 
             // Hitung jumlah halaman
             m_totalPages = Mathf.CeilToInt(_allData.Count / (float)m_itemsPerPage);
@@ -44,6 +50,8 @@ namespace Tour360TelkomCorpu.CanvasManager
             // Setup UI
             SetupPageButtons();
             ShowPage(m_currentPage);
+
+            m_onClickingCardAction = callback;
 
             _buttonClose.onClick.RemoveAllListeners();
             _buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
@@ -66,24 +74,41 @@ namespace Tour360TelkomCorpu.CanvasManager
         /// </summary>
         private void SetupPageButtons()
         {
-            if (m_totalPages <= 0) return;
+            if (m_totalPages <= 0)
+            {
+                for (int i = 0; i < _pageButtons.Count; i++)
+                    _pageButtons[i].gameObject.SetActive(false);
+
+                return;
+            }
+
+            _buttonPrev.transform.SetAsFirstSibling();
 
             for (int i = 0; i < m_totalPages; i++)
             {
-                int pageIndex = i;   // penting buat lambda
+                int pageIndex = i;
+                if (i >= _pageButtons.Count)
+                {
+                    var newBtn = Instantiate(_pageButtonPrefab, _pageButtonsParent);
+                    _pageButtons.Add(newBtn);
+                }
 
-                Button pageBtn = Instantiate(_pageButtonPrefab, _pageButtonsParent);
-                _pageButtons.Add(pageBtn);
+                Button pageBtn = _pageButtons[i];
+                pageBtn.gameObject.SetActive(true);
 
-                TextMeshProUGUI btnText = pageBtn.GetComponentInChildren<TextMeshProUGUI>();
+                var btnText = pageBtn.GetComponentInChildren<TextMeshProUGUI>();
                 if (btnText != null)
                     btnText.text = (pageIndex + 1).ToString();
 
                 pageBtn.onClick.RemoveAllListeners();
                 pageBtn.onClick.AddListener(() => OnClickPage(pageIndex));
+
+                pageBtn.transform.SetSiblingIndex(i + 1);
             }
 
-            _buttonPrev.transform.SetAsFirstSibling();
+            for (int i = m_totalPages; i < _pageButtons.Count; i++)
+                _pageButtons[i].gameObject.SetActive(false);
+
             _buttonNext.transform.SetAsLastSibling();
         }
 
@@ -121,10 +146,10 @@ namespace Tour360TelkomCorpu.CanvasManager
                     _selectionCardList[i].SetupCard(
                         bgCard: data.thumbnail_image.GetSpriteImage(),
                         cardName: data.thumbnail_name,
-                        onClickAction: () => Debug.Log($"haloooo")
+                        onClickAction: () => m_onClickingCardAction?.Invoke($"{data.documentId}")
                     );
 
-                    Debug.Log($"[PanelMenuNavigation] Show dataIndex: {dataIndex} on card: {i}");
+                    //Debug.Log($"[PanelMenuNavigation] Show dataIndex: {dataIndex} on card: {i}");
                 }
                 else
                 {
@@ -137,23 +162,10 @@ namespace Tour360TelkomCorpu.CanvasManager
             _buttonPrev.interactable = m_currentPage > 0;
             _buttonNext.interactable = m_currentPage < m_totalPages - 1;
 
-            // Update tampilan tombol halaman (misal: highlight yang aktif)
-            UpdatePageButtonsVisual();
-        }
-
-        private void UpdatePageButtonsVisual()
-        {
             for (int i = 0; i < _pageButtons.Count; i++)
             {
-                bool isCurrent = (i == m_currentPage);
-
-                // Contoh sederhana: ubah interactable atau warna
-                _pageButtons[i].interactable = !isCurrent;
-
-                // Kalau mau beda warna bisa pakai ColorBlock, dll
-                // var colors = _pageButtons[i].colors;
-                // colors.normalColor = isCurrent ? Color.white : Color.gray;
-                // _pageButtons[i].colors = colors;
+                Sprite buttonSprite = i == m_currentPage ? _pageButtonActiveSprite : _pageButtonNonactiveSprite;
+                _pageButtons[i].image.sprite = buttonSprite;
             }
         }
 
@@ -177,6 +189,8 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         private void OnClickPage(int pageIndex)
         {
+            if (pageIndex == m_currentPage) return;
+
             ShowPage(pageIndex);
         }
     }
