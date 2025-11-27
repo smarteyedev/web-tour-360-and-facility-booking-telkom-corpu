@@ -55,12 +55,7 @@ namespace Tour360TelkomCorpu.TourManager
         void Start()
         {
             if (cam == null) cam = Camera.main;
-           
-            StartAnimDrone(2f, 
-                () => Debug.Log("Start Animation Drone"),
-                () => Debug.Log("End Animation Drone"));
-
-
+            
             //if (zoomSlider != null)
             //{
             //    zoomSlider.minValue = 0;
@@ -193,9 +188,9 @@ namespace Tour360TelkomCorpu.TourManager
             autoRotate = !autoRotate;
         }
 
-        public void StartAnimDrone(float cameraY, Action startAnimation, Action endAnimation )
+        public void ZoomWithFallTransition(float cameraY, Action onStartTransition, Action onFinishTransition )
         {
-            startAnimation?.Invoke();
+            onStartTransition?.Invoke();
             // Convert 0–1 to 0–360
 
             float targetYaw = (cameraY >= 0f && cameraY <= 1f) //harus ada kondisi jika cameraY diluar 0-1 dan default nya dijadikan 0 
@@ -248,7 +243,7 @@ namespace Tour360TelkomCorpu.TourManager
             {
                 verticalAngle = endAngle;
                 seq.Kill();
-                endAnimation?.Invoke();
+                onFinishTransition?.Invoke();
                 Debug.Log("Drone animation finished");
             });
         }
