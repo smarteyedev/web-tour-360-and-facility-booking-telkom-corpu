@@ -12,8 +12,15 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] public GameObject _screenPanel;
         [SerializeField] private Slider _loadingBar;
 
+        [Header("GIF Animation")]
+        [SerializeField] private Image _gifImage;           // tempat tampil GIF
+        [SerializeField] private List<Sprite> _gifFrames;   // frame-frame GIF
+        [SerializeField] private float _gifSpeed = 0.08f;   // kecepatan animasi
+
         public IEnumerator LoadingScreenForApiProcess(Func<Action<bool>, string, IEnumerator> _loadingProcess, String _documentId, Action _onComplete = null, Action _onError = null)
         {
+
+
             _screenPanel.SetActive(true);
             _loadingBar.value = 0f;
             float _visualProgress = 0f;
@@ -55,6 +62,27 @@ namespace Tour360TelkomCorpu.CanvasManager
                 yield return new WaitForSeconds(.8f);
 
                 _onError?.Invoke();
+            }
+        }
+
+        public void Start()
+        {
+            // Mulai animasi GIF ketika object aktif
+            StartCoroutine(LoadingAnimation());
+        }
+
+        public IEnumerator LoadingAnimation()
+        {
+            if (_gifFrames == null || _gifFrames.Count == 0)
+                yield break;
+
+            int index = 0;
+
+            while (true)
+            {
+                _gifImage.sprite = _gifFrames[index];
+                index = (index + 1) % _gifFrames.Count;
+                yield return new WaitForSeconds(_gifSpeed);
             }
         }
     }
