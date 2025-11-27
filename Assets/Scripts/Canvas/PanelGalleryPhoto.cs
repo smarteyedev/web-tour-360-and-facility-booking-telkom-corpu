@@ -5,9 +5,8 @@ using UnityEngine;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    using Tour360TelkomCorpu.DataManager;
     using UnityEngine.UI;
-    public class PanelGalleryPhoto : PanelController<List<Sprite>, Action>
+    public class PanelGalleryPhoto : PanelController<List<Sprite>, string>
     {
         [Header("Guidance Section")]
 

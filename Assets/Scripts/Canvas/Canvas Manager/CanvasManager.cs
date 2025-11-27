@@ -24,10 +24,10 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         private void Awake()
         {
-            SetupPanelDict();
+            SetupPanelDictionary();
         }
 
-        private void SetupPanelDict()
+        private void SetupPanelDictionary()
         {
             m_panelControllerDictionary.Clear();
             if (_panelComponentList == null) return;
@@ -42,7 +42,7 @@ namespace Tour360TelkomCorpu.CanvasManager
                     if (m_panelControllerDictionary.ContainsKey(key))
                     {
 #if UNITY_EDITOR
-                        Debug.LogWarning($"CanvasManager: Duplicate registration for panel key '{key}'. Existing will be kept and this one ignored. Object: {p.name}", p);
+                        Debug.LogWarning($"[CanvasManager.cs]: Duplicate registration for panel key '{key}'. Existing will be kept and this one ignored. Object: {p.name}", p);
 #endif
                         // jika ingin overwrite, gunakan panelControllerDict[key] = ip;
                         continue;
@@ -52,17 +52,25 @@ namespace Tour360TelkomCorpu.CanvasManager
                 else
                 {
 #if UNITY_EDITOR
-                    Debug.LogWarning($"CanvasManager: component '{p.name}' does not implement IPanel and will be ignored.", p);
+                    Debug.LogWarning($"[CanvasManager.cs]: component '{p.name}' does not implement IPanel and will be ignored.", p);
 #endif
                 }
             }
 
 #if UNITY_EDITOR
-            Debug.Log($"CanvasManager: Registered {m_panelControllerDictionary.Count} panels.");
+            Debug.Log($"[CanvasManager.cs]: Registered {m_panelControllerDictionary.Count} panels.");
 #endif
         }
 
-        public void OpenPanel(PanelType panelType, object data, Action<string> callback, Action onClosePanel)
+
+        /// <summary>
+        /// Membuka panel dan mengirim data untuk ditampilkan
+        /// </summary>
+        /// <param name="panelType">Jenis panel yang akan ditampilkan</param>
+        /// <param name="data">Data yang akan ditampilkan di dalam panel</param>
+        /// <param name="callback">Aksi yang akan dieksekusi dalam fungsi yang ada dipanel. (ex: berpindah lokasi menggunakan documentId)</param>
+        /// <param name="onClosePanel">Fungsi yang akan dipanggil ketika user menutup panel</param>
+        public void OpenPanel(PanelType panelType, object data, Action<object> callback, Action onClosePanel)
         {
             CloseAllPanel();
 
@@ -71,20 +79,30 @@ namespace Tour360TelkomCorpu.CanvasManager
                 panel.ShowPanel(data, callback, () =>
                 {
                     onClosePanel?.Invoke();
-
                     panel.HidePanel();
                     m_currentActivePanel.Remove(panelType);
                 });
 
                 m_currentActivePanel.Add(panelType, panel);
-                Debug.Log($"CanvasManager: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
+#if UNITY_EDITOR
+                Debug.Log($"[CanvasManager.cs]: Panel {panelType.ToString()} is opened | Current active panel: {m_currentActivePanel.Count}");
+#endif
             }
             else
             {
-                Debug.LogError($"CanvasManager: panel {panelType.ToString()} is not registered");
+#if UNITY_EDITOR
+                Debug.LogError($"[CanvasManager.cs]: panel {panelType.ToString()} is not registered");
+#endif
             }
+
+
+            if (_topbarDropDown.activeSelf)
+                _topbarDropDown.SetActive(false);
         }
 
+        /// <summary>
+        /// Menutup semua panel yang saat ini tampil
+        /// </summary>
         public void CloseAllPanel()
         {
             if (m_currentActivePanel.Count > 0)
@@ -97,8 +115,9 @@ namespace Tour360TelkomCorpu.CanvasManager
                 }
 
 #if UNITY_EDITOR
-                Debug.Log($"CanvasManager: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
+                Debug.Log($"[CanvasManager.cs]: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
 #endif
+
             }
         }
 

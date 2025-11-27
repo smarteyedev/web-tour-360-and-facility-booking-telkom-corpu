@@ -120,7 +120,7 @@ namespace Tour360TelkomCorpu.SphereController
             ).normalized;
 
             float radius = GetSphereRadius();
-            Debug.Log($"radius: {radius}");
+            // Debug.Log($"radius: {radius}");
             float r = radius + _surfaceOffset + extraOffset;
 
             // transform direction to world (handles sphere rotation)

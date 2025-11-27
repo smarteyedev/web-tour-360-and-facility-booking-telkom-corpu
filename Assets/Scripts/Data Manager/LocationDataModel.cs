@@ -5,12 +5,12 @@ using UnityEngine;
 namespace Tour360TelkomCorpu.DataManager
 {
     [Serializable]
-    public class    LocationDataModel
+    public class LocationDataModel
     {
         public string name;
         public string documentId;
         public LocationType locationType = LocationType.NONE;
-        public CategoryFunctionality category_functionality;
+        public BuildingTarget building_parent;
         public bool bookable_status;
         public bool show_on_menu_panel;
         public ImageField background_360_image;
@@ -23,6 +23,7 @@ namespace Tour360TelkomCorpu.DataManager
         public List<NavigationSetting> navigations;
 
         [Header("Additional Property for Drone and Building")]
+        public List<BuildingCategories> building_categories;
         public ImageField maps_image;
         public ImageField description_image;
 
@@ -48,6 +49,8 @@ namespace Tour360TelkomCorpu.DataManager
                 name = b.name,
                 documentId = b.documentId,
                 locationType = LocationType.BUILDING,
+                building_categories = b.building_categories,
+                show_on_menu_panel = b.show_on_menu_panel,
                 background_360_image = b.background_360_image,
                 first_camera_pov = b.first_camera_pov,
                 maps_image = b.maps_image,
@@ -63,7 +66,7 @@ namespace Tour360TelkomCorpu.DataManager
                 name = f.name,
                 documentId = f.documentId,
                 locationType = LocationType.FACILITY,
-                category_functionality = f.category_functionality,
+                building_parent = f.building_parent,
                 bookable_status = f.bookable_status,
                 show_on_menu_panel = f.show_on_menu_panel,
                 background_360_image = f.background_360_image,
@@ -77,20 +80,41 @@ namespace Tour360TelkomCorpu.DataManager
             };
         }
 
-        public bool IsImageAssetDownloaded()
+        public bool IsThumbnailImageAssetDownloaded()
+        {
+            if (locationType != LocationType.FACILITY) return true;
+
+            return thumbnail_image.textureImage != null;
+        }
+
+        public Dictionary<Action<Texture2D>, string> GetDownloadableThumbnailImageAssetList(string baseUrl = null)
+        {
+            var targets = new Dictionary<Action<Texture2D>, string>();
+
+            if (locationType == LocationType.FACILITY)
+            {
+                if (ModelHandler.IsNeedToDownload(thumbnail_image))
+                {
+                    targets.Add(tex => thumbnail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, thumbnail_image.url));
+                }
+            }
+
+            return targets;
+        }
+
+        public bool IsInformationImageAssetDownloaded()
         {
             if (locationType == LocationType.FACILITY)
             {
-                return background_360_image.textureImage != null && thumbnail_image != null &&
-                facility_detail_image != null;
+                return background_360_image.textureImage != null && facility_detail_image.textureImage != null;
             }
             else
             {
-                return background_360_image.textureImage != null && maps_image != null && description_image != null;
+                return background_360_image.textureImage != null && maps_image.textureImage != null && description_image.textureImage != null;
             }
         }
 
-        public Dictionary<Action<Texture2D>, string> DownloadAssetList(string baseUrl = null)
+        public Dictionary<Action<Texture2D>, string> GetDownloadableInformationImageAssetList(string baseUrl = null)
         {
             var targets = new Dictionary<Action<Texture2D>, string>();
 
@@ -112,11 +136,6 @@ namespace Tour360TelkomCorpu.DataManager
 
             if (locationType == LocationType.FACILITY)
             {
-                if (ModelHandler.IsNeedToDownload(thumbnail_image))
-                {
-                    targets.Add(tex => thumbnail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, thumbnail_image.url));
-                }
-
                 if (ModelHandler.IsNeedToDownload(facility_detail_image))
                 {
                     targets.Add(tex => facility_detail_image.textureImage = tex, ModelHandler.BuildFullUrl(baseUrl, facility_detail_image.url));

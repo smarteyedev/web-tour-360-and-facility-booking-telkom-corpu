@@ -30,6 +30,8 @@ namespace Tour360TelkomCorpu.TourManager
 
         [Header("Auto Rotate")]
         [SerializeField] private bool autoRotate = true;
+
+        [SerializeField] private float _holdTimeForDisableAutoRotate = .3f;
         [SerializeField] private bool autoRotateClockwise = true;
         [SerializeField] private float autoRotateSpeed = 5f;
 
@@ -77,26 +79,24 @@ namespace Tour360TelkomCorpu.TourManager
             horizontal.Rotate(0f, autoRotateSpeed * Time.deltaTime * dir, 0f, Space.Self);
         }
 
-        private float m_holdTime = 0f;
-
         void HandleManualRotation()
         {
             if (Input.GetMouseButtonDown(0))
             {
                 lastMousePos = Input.mousePosition;
-                m_holdTime = 0f;
+                _holdTimeForDisableAutoRotate = 0f;
             }
 
             if (Input.GetMouseButton(0))
             {
                 // hitung durasi hold
-                m_holdTime += Time.deltaTime;
+                _holdTimeForDisableAutoRotate += Time.deltaTime;
 
                 // hitung pergerakan mouse
                 Vector3 deltaHold = Input.mousePosition - lastMousePos;
 
                 bool isMoving = deltaHold.sqrMagnitude > 0.1f * 0.1f;
-                bool holdLongEnough = m_holdTime >= .5f;
+                bool holdLongEnough = _holdTimeForDisableAutoRotate >= .3f;
 
                 if (holdLongEnough && isMoving)
                 {

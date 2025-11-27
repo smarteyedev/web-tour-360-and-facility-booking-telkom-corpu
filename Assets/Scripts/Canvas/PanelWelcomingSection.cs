@@ -7,7 +7,7 @@ namespace Tour360TelkomCorpu.CanvasManager
     using Tour360TelkomCorpu.DataManager;
     using UnityEngine.UI;
 
-    public class PanelWelcomingSection : PanelController<List<TelkomCorpuAreaCard>, Action>
+    public class PanelWelcomingSection : PanelController<List<TelkomCorpuAreaCard>, string>
     {
         [Space(10f)]
         [Header("Welcoming Section")]
@@ -18,7 +18,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         protected override void ShowPanel(List<TelkomCorpuAreaCard> contentData, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             _panelContainer.gameObject.SetActive(true);
-            _buttonStart.onClick.AddListener(() => callbackUsingDocumentId?.Invoke(""));
+            _buttonStart.onClick.AddListener(() => onClosePanel?.Invoke());
         }
 
         public override void HidePanel()

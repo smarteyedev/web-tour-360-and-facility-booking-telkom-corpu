@@ -579,7 +579,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   hotspotType: 1
-  maxVisibleAngle: 90
+  maxVisibleAngle: 50
   hideWhenBehind: 1
   _imageOutline: {fileID: 8772013121744342757}
   _canvasGroupHotspot: {fileID: 8385647798668349530}

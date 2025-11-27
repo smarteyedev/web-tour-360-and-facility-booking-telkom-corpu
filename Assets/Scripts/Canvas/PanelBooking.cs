@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelBooking : PanelController<string, Action>
+    public class PanelBooking : PanelController<string, string>
     {
         [DllImport("__Internal")]
         private static extern void OpenInSameTab(string url);
@@ -16,17 +16,6 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private Button _buttonClose;
 
-        private void Start()
-        {
-            ShowPanel(null);
-
-            if (_buttonClose != null)
-                _buttonClose.onClick.AddListener(() =>
-                {
-                    HidePanel();
-                });
-        }
-
         protected override void ShowPanel(
             string contentData,
             Action<string> callbackUsingDocumentId = null,
@@ -34,6 +23,11 @@ namespace Tour360TelkomCorpu.CanvasManager
         {
             if (_panelContainer != null)
                 _panelContainer.SetActive(true);
+
+            _buttonClose.onClick.AddListener(() =>
+            {
+                HidePanel();
+            });
 
             callbackUsingDocumentId?.Invoke(contentData);
         }
@@ -44,7 +38,7 @@ namespace Tour360TelkomCorpu.CanvasManager
                 _panelContainer.SetActive(false);
         }
 
-     
+
         public void OpenLink(string targetUrl)
         {
             if (string.IsNullOrEmpty(targetUrl))
