@@ -122,6 +122,14 @@ namespace Tour360TelkomCorpu.DataManager
     {
         public string category_name;
         public string documentId;
+        public List<BuildingChild> buildings;
+
+        [Serializable]
+        public struct BuildingChild
+        {
+            public string name;
+            public string documentId;
+        }
     }
 
     [Serializable]

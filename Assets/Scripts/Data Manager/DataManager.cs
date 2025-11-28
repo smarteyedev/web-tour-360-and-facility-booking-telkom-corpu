@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using Smarteye.RestAPI;
 using System;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Tour360TelkomCorpu.DataManager
 {
@@ -71,6 +70,10 @@ namespace Tour360TelkomCorpu.DataManager
                 categories {
                   category_name
                   documentId
+                  buildings {
+                    name
+                    documentId
+                  }
                 }
               }";
 
@@ -554,8 +557,6 @@ namespace Tour360TelkomCorpu.DataManager
       string categoryDocumentId,
       Action onValidStart,
       Action<BuildingCategory, List<BuildingCategory>, List<LocationDataModel>> result,
-      // Action<List<BuildingCategory>> categoryList,
-      // Action<List<LocationDataModel>> locationList,
       Action<float> onProgress = null,
       bool forceRedownload = false
     )
@@ -564,7 +565,7 @@ namespace Tour360TelkomCorpu.DataManager
       {
         // Debug.Log($"[DataManager.cs]: dokumen null {_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId) == null} | location data list {_locationDataList == null} | target id {string.IsNullOrEmpty(categoryDocumentId)}");
         onProgress?.Invoke(1f);
-        result?.Invoke(null, null, null);
+        result?.Invoke(null, new List<BuildingCategory>(), new List<LocationDataModel>());
         yield break;
       }
 
@@ -601,7 +602,7 @@ namespace Tour360TelkomCorpu.DataManager
       if (downloadTargets.Count == 0)
       {
         onProgress?.Invoke(1f);
-        result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId), _buildingCategoryList, locationTarget);
+        result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId), _buildingCategoryList.Where((c) => c.buildings.Count > 0).ToList(), locationTarget);
         yield break;
       }
 
@@ -626,7 +627,9 @@ namespace Tour360TelkomCorpu.DataManager
       yield return new WaitUntil(() => finished);
 
       onProgress?.Invoke(1f);
-      result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId), _buildingCategoryList, locationTarget);
+      result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId),
+                                            _buildingCategoryList.Where((c) => c.buildings.Count > 0).ToList(),
+                                            locationTarget);
     }
 
     public BuildingCategory GetFirstBuildingCategoryData()

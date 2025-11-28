@@ -459,7 +459,7 @@ namespace Tour360TelkomCorpu.TourManager
                     FormatPaginationData data = new FormatPaginationData();
                     data.isUsingCategory = false;
                     data.currentCategorySelected = null;
-                    data.categoryList = null;
+                    data.categoryList = new List<BuildingCategory>();
                     data.locationDataList = locations;
                     data.onChangeCategoryAction = null;
 
@@ -477,6 +477,8 @@ namespace Tour360TelkomCorpu.TourManager
             if (m_isTryToLoadingAsset == true) return;
 
             string target = String.IsNullOrEmpty(_categorySelectedOnNavigationMenu.documentId) ? _dataManager.GetFirstBuildingCategoryData().documentId : _categorySelectedOnNavigationMenu.documentId;
+
+            // Debug.Log($"[TourManger.cs]: taget id {target}");
 
             StartCoroutine(_dataManager.RequestBuildingListByCategory(
                 categoryDocumentId: target,

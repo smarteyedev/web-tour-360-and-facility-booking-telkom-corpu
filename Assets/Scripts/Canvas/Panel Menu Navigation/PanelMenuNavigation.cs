@@ -11,7 +11,7 @@ namespace Tour360TelkomCorpu.CanvasManager
 {
     public class PanelMenuNavigation : PanelController<FormatPaginationData, string>
     {
-        [SerializeField] private FormatPaginationData _allData;
+        [SerializeField] private FormatPaginationData _contentData;
         private int m_itemsPerPage = 8;
         private int m_currentPage = 0;
         private int m_totalPages = 0;
@@ -22,8 +22,14 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private Button _buttonClose;
         [SerializeField] private List<SelectionCard> _selectionCardList;
         [SerializeField] private TextMeshProUGUI _textPanelTitle;
+        [Space(10f)]
+        [SerializeField] private GameObject _menuCategory;
+        [SerializeField] private Button _menuCategoryButtonPrefab;
+        [SerializeField] private Sprite _menuButtonActiveSprite;
+        [SerializeField] private Sprite _menuButtonNonactiveSprite;
+        private readonly List<Button> m_menuCategoryButtons = new List<Button>();
 
-        [Space(8f)]
+        [Space(10f)]
         [SerializeField] private Button _buttonPrev;
         [SerializeField] private Button _buttonNext;
         [SerializeField] private Button _pageButtonPrefab;
@@ -36,19 +42,26 @@ namespace Tour360TelkomCorpu.CanvasManager
 
         protected override void ShowPanel(FormatPaginationData contentData, Action<string> callback = null, Action onClosePanel = null)
         {
+            if (contentData == null) return;
+
             _panelContainer.gameObject.SetActive(true);
 
-            if (_allData == null || !_allData.locationDataList.SequenceEqual(contentData.locationDataList))
+            if (_contentData == null || !_contentData.locationDataList.SequenceEqual(contentData.locationDataList) || !_contentData.categoryList.SequenceEqual(contentData.categoryList))
             {
                 // Simpan copy dari data baru supaya aman dari perubahan luar
-                // _allData.locationDataList = new List<LocationDataModel>(contentData.locationDataList);
-                _allData = contentData;
+                _contentData = contentData;
+
+                if (_contentData.isUsingCategory)
+                {
+                    SetupMenuCategoryButton();
+                }
             }
 
-            _textPanelTitle.text = _panelIndentity == PanelType.MenuNavigation ? $"Facilities" : $"Building Category";
+            _menuCategory.SetActive(_contentData.isUsingCategory);
+            _textPanelTitle.text = _contentData.isUsingCategory ? $"Building Category" : $"Facilities";
 
             // Hitung jumlah halaman
-            m_totalPages = Mathf.CeilToInt(_allData.locationDataList.Count / (float)m_itemsPerPage);
+            m_totalPages = Mathf.CeilToInt(_contentData.locationDataList.Count / (float)m_itemsPerPage);
             m_currentPage = 0;
 
             // Setup UI
@@ -71,6 +84,51 @@ namespace Tour360TelkomCorpu.CanvasManager
         public override void HidePanel()
         {
             _panelContainer.gameObject.SetActive(false);
+        }
+
+        private void SetupMenuCategoryButton()
+        {
+            if (_contentData.categoryList.Count <= 0)
+            {
+                _menuCategory.SetActive(false);
+                return;
+            }
+
+            int currentActiveCategory = _contentData.categoryList.IndexOf(_contentData.currentCategorySelected);
+
+            for (int i = 0; i < _contentData.categoryList.Count; i++)
+            {
+                int categoryIndex = i;
+
+                Button targetButton;
+                if (i < m_menuCategoryButtons.Count)
+                {
+                    targetButton = m_menuCategoryButtons[i];
+                    targetButton.gameObject.SetActive(true);
+                }
+                else
+                {
+                    Button newBtn = Instantiate(_menuCategoryButtonPrefab, _menuCategory.transform);
+                    m_menuCategoryButtons.Add(newBtn);
+                    targetButton = m_menuCategoryButtons[i];
+                }
+
+                var btnText = targetButton.GetComponentInChildren<TextMeshProUGUI>();
+                btnText.text = _contentData.categoryList[i].category_name;
+                targetButton.gameObject.name = $"Button menu {i} : {_contentData.categoryList[i].category_name}";
+
+                m_menuCategoryButtons[i].onClick.RemoveAllListeners();
+                m_menuCategoryButtons[i].onClick.AddListener(() => _contentData.onChangeCategoryAction?.Invoke(_contentData.categoryList[categoryIndex]));
+
+                var btnImage = targetButton.GetComponent<Image>();
+                btnImage.sprite = i == currentActiveCategory ? _menuButtonActiveSprite : _menuButtonNonactiveSprite;
+
+            }
+
+            for (int j = _contentData.categoryList.Count; j < m_menuCategoryButtons.Count; j++)
+            {
+                m_menuCategoryButtons[j].gameObject.SetActive(false);
+            }
         }
 
         /// <summary>
@@ -142,11 +200,11 @@ namespace Tour360TelkomCorpu.CanvasManager
 
                 // Debug.Log($"[PanelMenuNavigation.cs]: data count {_allData.Count}");
 
-                if (dataIndex < _allData.locationDataList.Count)
+                if (dataIndex < _contentData.locationDataList.Count)
                 {
                     // Ada data untuk card ini
                     _selectionCardList[i].gameObject.SetActive(true);
-                    LocationDataModel data = _allData.locationDataList[dataIndex];
+                    LocationDataModel data = _contentData.locationDataList[dataIndex];
 
                     // Asumsikan SelectionCard punya fungsi Setup / BindData
                     _selectionCardList[i].SetupCard(
