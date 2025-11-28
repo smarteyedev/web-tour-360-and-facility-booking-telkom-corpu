@@ -41,7 +41,7 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private float minFOV = 20f;
         [SerializeField] private float maxFOV = 60f;
         [SerializeField] private float zoomSmooth = 6f;
-        private float targetFOV = 60f;
+        [SerializeField] private float targetFOV = 57f;
 
         [Header("Component References")]
         public Camera cam;

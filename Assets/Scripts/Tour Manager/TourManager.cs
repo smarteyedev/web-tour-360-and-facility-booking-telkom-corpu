@@ -149,6 +149,11 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
+        public void SetFullscreen()
+        {
+            Screen.fullScreen = !Screen.fullScreen;
+        }
+
         public void SetupLocationAsset(int targetIndex)
         {
             if (m_isTryToLoadingAsset == true) return;
