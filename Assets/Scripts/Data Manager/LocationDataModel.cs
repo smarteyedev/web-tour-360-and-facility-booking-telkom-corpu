@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 
 namespace Tour360TelkomCorpu.DataManager
 {
@@ -23,9 +25,14 @@ namespace Tour360TelkomCorpu.DataManager
         public List<NavigationSetting> navigations;
 
         [Header("Additional Property for Drone and Building")]
-        public List<BuildingCategories> building_categories;
+        public List<BuildingCategory> building_categories;
         public ImageField maps_image;
         public ImageField description_image;
+
+        public bool IsHasCategory(string documentId)
+        {
+            return building_categories.Any((x) => x.documentId == documentId);
+        }
 
         public static LocationDataModel FromDrone(Drone drone)
         {
@@ -53,6 +60,8 @@ namespace Tour360TelkomCorpu.DataManager
                 show_on_menu_panel = b.show_on_menu_panel,
                 background_360_image = b.background_360_image,
                 first_camera_pov = b.first_camera_pov,
+                thumbnail_image = b.thumbnail_image,
+                thumbnail_name = b.thumbnail_name,
                 maps_image = b.maps_image,
                 description_image = b.description_image,
                 navigations = b.navigations
@@ -82,7 +91,7 @@ namespace Tour360TelkomCorpu.DataManager
 
         public bool IsThumbnailImageAssetDownloaded()
         {
-            if (locationType != LocationType.FACILITY) return true;
+            if (locationType != LocationType.FACILITY && locationType != LocationType.BUILDING) return true;
 
             return thumbnail_image.textureImage != null;
         }
@@ -91,7 +100,7 @@ namespace Tour360TelkomCorpu.DataManager
         {
             var targets = new Dictionary<Action<Texture2D>, string>();
 
-            if (locationType == LocationType.FACILITY)
+            if (locationType == LocationType.FACILITY || locationType == LocationType.BUILDING)
             {
                 if (ModelHandler.IsNeedToDownload(thumbnail_image))
                 {

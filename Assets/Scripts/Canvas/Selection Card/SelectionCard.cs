@@ -36,5 +36,14 @@ namespace Tour360TelkomCorpu.CanvasManager
                 _buttonSelectCorpuArea.onClick.AddListener(() => onClickAction?.Invoke());
             }
         }
+
+        public void SetupCard(Sprite bgCard, string cardName, Action onClickAction)
+        {
+            _imageBackgroundCard.sprite = bgCard;
+            _textCardName.text = $"{cardName}";
+
+            _buttonSelectCorpuArea.onClick.RemoveAllListeners();
+            _buttonSelectCorpuArea.onClick.AddListener(() => onClickAction?.Invoke());
+        }
     }
 }

@@ -81,7 +81,7 @@ namespace Tour360TelkomCorpu.DataManager
     {
         public string name;
         public string documentId;
-        public List<BuildingCategories> building_categories;
+        public List<BuildingCategory> building_categories;
         public bool show_on_menu_panel;
         public ImageField background_360_image;
         public int first_camera_pov;
@@ -112,10 +112,24 @@ namespace Tour360TelkomCorpu.DataManager
     }
 
     [Serializable]
-    public class BuildingCategories
+    public class Categories
     {
-        public string documentId;
+        public List<BuildingCategory> categories;
+    }
+
+    [Serializable]
+    public class BuildingCategory
+    {
         public string category_name;
+        public string documentId;
+        public List<BuildingChild> buildings;
+
+        [Serializable]
+        public struct BuildingChild
+        {
+            public string name;
+            public string documentId;
+        }
     }
 
     [Serializable]
@@ -135,7 +149,7 @@ namespace Tour360TelkomCorpu.DataManager
         {
             if (textureImage == null)
             {
-                Debug.Log($"asset is null");
+                Debug.LogWarning($"[StrapiDataModel.cs]: Asset texture from strapi is null");
                 return null;
             }
 

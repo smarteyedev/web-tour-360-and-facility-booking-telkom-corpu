@@ -49,13 +49,13 @@ namespace Tour360TelkomCorpu.SphereController
                 {
                     usingTexture = !usingTexture;
                     _Material.SetFloat("_Blend", usingTexture ? 0 : 1);
-                    Debug.Log("Transition Completed. Final Blend Value: " + _Material.GetFloat("_Blend"));
+                    //Debug.Log("Transition Completed. Final Blend Value: " + _Material.GetFloat("_Blend"));
                     onFinishTransition?.Invoke();
                 });
             }
             else
             {
-                Debug.Log("Transisi Zoom dijalankan!");
+                //Debug.Log("Transisi Zoom dijalankan!");
 
                 Vector3 startScale = transform.localScale;
                 Vector3 zoomOut = startScale * 1.2f;
@@ -73,7 +73,7 @@ namespace Tour360TelkomCorpu.SphereController
                             .SetEase(Ease.InOutQuad)
                             .OnComplete(() =>
                             {
-                                Debug.Log("Zoom Transition Completed.");
+                                //Debug.Log("Zoom Transition Completed.");
                                 onFinishTransition?.Invoke();
                             });
                     });

@@ -13,10 +13,11 @@ namespace Tour360TelkomCorpu.TourManager
 
     public class TourManager : MonoBehaviour
     {
-        [Header("Location Data")]
+        [Header("Datas")]
         private int m_currentLocationIndex = 0;
         [SerializeField] private LocationDataModel _locationData = new LocationDataModel();
         [SerializeField] private List<int> _visitedLocationIndexList = new List<int>();
+        [SerializeField] private BuildingCategory _categorySelectedOnNavigationMenu = new BuildingCategory();
 
         [Header("Configuration")]
 
@@ -378,7 +379,7 @@ namespace Tour360TelkomCorpu.TourManager
                     break;
 
                 case TargetHotspot.PANEL_NAVIGATION:
-                    result = () => OpenPanelNavigationOnBuilding();
+                    result = () => OpenPanelNavigationToFacility();
                     break;
             }
 
@@ -434,7 +435,7 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
-        private void OpenPanelNavigationOnBuilding()
+        private void OpenPanelNavigationToFacility()
         {
             if (_locationData.locationType == LocationType.DRONE) return;
 
@@ -445,15 +446,66 @@ namespace Tour360TelkomCorpu.TourManager
                 onValidStart: () =>
                 {
                     // Debug.Log($"[{name}]: starting search for data panel navigation...");
+
+                    m_isTryToLoadingAsset = true;
                 },
-                onDone: (List<LocationDataModel> data) =>
+                onDone: (List<LocationDataModel> locations) =>
                 {
                     /* for (int i = 0; i < data.Count; i++)
                     {
                         Debug.Log($"[{name}]| navigation option {i + 1} to {data[i].thumbnail_name} & ...");
                     } */
 
-                    _canvasManager.OpenPanel(PanelType.MenuNavigationToFacility, data, null, null);
+                    FormatPaginationData data = new FormatPaginationData();
+                    data.isUsingCategory = false;
+                    data.currentCategorySelected = null;
+                    data.categoryList = new List<BuildingCategory>();
+                    data.locationDataList = locations;
+                    data.onChangeCategoryAction = null;
+
+                    _canvasManager.OpenPanel(PanelType.MenuNavigation, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
+
+                    m_isTryToLoadingAsset = false;
+                },
+                onProgress: (float progress) => { },
+                forceRedownload: false
+            ));
+        }
+
+        public void OpenPanelNavigationToBuilding()
+        {
+            if (m_isTryToLoadingAsset == true) return;
+
+            string target = String.IsNullOrEmpty(_categorySelectedOnNavigationMenu.documentId) ? _dataManager.GetFirstBuildingCategoryData().documentId : _categorySelectedOnNavigationMenu.documentId;
+
+            // Debug.Log($"[TourManger.cs]: taget id {target}");
+
+            StartCoroutine(_dataManager.RequestBuildingListByCategory(
+                categoryDocumentId: target,
+                onValidStart: () =>
+                {
+                    m_isTryToLoadingAsset = true;
+                },
+                result: (currentCategory, categoryList, locations) =>
+                {
+                    _categorySelectedOnNavigationMenu = currentCategory;
+
+                    FormatPaginationData data = new FormatPaginationData();
+                    data.isUsingCategory = true;
+                    data.currentCategorySelected = currentCategory;
+                    data.categoryList = categoryList;
+                    data.locationDataList = locations;
+                    data.onChangeCategoryAction = (BuildingCategory targetCategory) =>
+                    {
+                        _categorySelectedOnNavigationMenu = targetCategory;
+                        OpenPanelNavigationToBuilding();
+                    };
+
+                    // Debug.Log($"[TourManager.cs]| jumlah data {data.locationDataList.Count}");
+
+                    _canvasManager.OpenPanel(PanelType.MenuNavigation, data, (object documentId) => OnChangeLocationByDocumentId((string)documentId), null);
+
+                    m_isTryToLoadingAsset = false;
                 },
                 onProgress: (float progress) => { },
                 forceRedownload: false
