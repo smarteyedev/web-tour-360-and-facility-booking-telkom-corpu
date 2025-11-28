@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <BuildReportToolOptions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <BuildReportFolderName>UnityBuildReports</BuildReportFolderName>
-  <BuildReportCustomOutputPath>D:/One Drive/OneDrive/Dokumen</BuildReportCustomOutputPath>
+  <BuildReportCustomOutputPath>C:/Users/LENOVO LOQ 15/Documents</BuildReportCustomOutputPath>
   <SaveType>0</SaveType>
   <KeepCopyOfLogOfLastSuccessfulBuild>true</KeepCopyOfLogOfLastSuccessfulBuild>
   <CollectBuildInfo>true</CollectBuildInfo>
