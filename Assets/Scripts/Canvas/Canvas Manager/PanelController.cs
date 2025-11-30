@@ -22,6 +22,8 @@ namespace Tour360TelkomCorpu.CanvasManager
     {
         public string descriptionText;
         public Sprite facilityDetailSprite;
+        public bool isCanBook;
+        public Action onOpenPanelBooking;
         public bool isAutoShow;
     }
 

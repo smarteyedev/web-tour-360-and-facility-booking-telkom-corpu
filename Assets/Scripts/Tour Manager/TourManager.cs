@@ -195,7 +195,7 @@ namespace Tour360TelkomCorpu.TourManager
                             onStartTransition: null,
                             onFinishTransition: () =>
                             {
-                                _canvasManager.SetLocationPlank(_locationData.name, GenerateShowLocationDescriptionAction());
+                                _canvasManager.SetLocationData(_locationData.name, _locationData.bookable_status, GenerateShowLocationDescriptionAction());
 
                                 if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
                                 {
@@ -429,6 +429,8 @@ namespace Tour360TelkomCorpu.TourManager
                         FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
                         dFacility.descriptionText = _locationData.description_text;
                         dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
+                        dFacility.isCanBook = _locationData.bookable_status;
+                        dFacility.onOpenPanelBooking = () => Debug.Log($"Open panel booking"); ;
                         dFacility.isAutoShow = _isAlwaysShowLocationDescription;
                         _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, (object newVal) => _isAlwaysShowLocationDescription = (bool)newVal, null);
                     };

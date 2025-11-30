@@ -13,6 +13,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private TextMeshProUGUI _TextDescription;
         [SerializeField] private Image _ImageDetail;
         [SerializeField] private Button _buttonClose;
+        [SerializeField] private Button _buttonBooking;
         [SerializeField] private Toggle _toggleShowPanelAutomatically;
 
 
@@ -41,6 +42,17 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             _buttonClose.onClick.RemoveAllListeners();
             _buttonClose.onClick.AddListener(() => onClosePanel?.Invoke());
+
+            if (descriptionAsset.isCanBook)
+            {
+                _buttonBooking.gameObject.SetActive(true);
+                _buttonBooking.onClick.RemoveAllListeners();
+                _buttonBooking.onClick.AddListener(() => descriptionAsset.onOpenPanelBooking?.Invoke());
+            }
+            else
+            {
+                _buttonBooking.gameObject.SetActive(false);
+            }
 
             _toggleShowPanelAutomatically.isOn = descriptionAsset.isAutoShow;
             _toggleShowPanelAutomatically.onValueChanged.RemoveAllListeners();

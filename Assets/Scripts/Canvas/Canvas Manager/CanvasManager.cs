@@ -11,12 +11,13 @@ namespace Tour360TelkomCorpu.CanvasManager
     public class CanvasManager : MonoBehaviour
     {
         [Header("Component Menu Bar")]
-        [SerializeField] private TextMeshProUGUI _textLocationName;
-        [SerializeField] private Button _buttonOpenPanelInformation;
-        [SerializeField] private Button _buttonAutoRotation;
-        [SerializeField] private GameObject _topbarDropDown;
         [SerializeField] private GameObject _topbarMenu;
         [SerializeField] private GameObject _bottombarMenu;
+        [SerializeField] private TextMeshProUGUI _textLocationName;
+        [SerializeField] private Button _buttonOpenPanelInformation;
+        [SerializeField] private GameObject _topbarDropDown;
+        [SerializeField] private Button _buttonAutoRotation;
+        [SerializeField] private Button _buttonBooking;
 
         [Header("Component References")]
         public LoadingScreenHandler loadingScreen;
@@ -128,11 +129,13 @@ namespace Tour360TelkomCorpu.CanvasManager
             _bottombarMenu.SetActive(isActive);
         }
 
-        public void SetLocationPlank(string locationName, Action onClickPanelInfo)
+        public void SetLocationData(string locationName, bool isCanBooking, Action onClickPanelInfo)
         {
             _textLocationName.text = locationName;
             _buttonOpenPanelInformation.onClick.RemoveAllListeners();
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
+
+            _buttonBooking.gameObject.SetActive(isCanBooking);
         }
 
         public bool AnyPanelOpenNow()
