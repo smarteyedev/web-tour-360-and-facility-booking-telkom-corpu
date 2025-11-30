@@ -395,7 +395,14 @@ namespace Tour360TelkomCorpu.TourManager
                     break;
 
                 case TargetHotspot.PANEL_NAVIGATION:
-                    result = () => OpenPanelNavigationToFacility();
+                    result = () =>
+                    {
+                        if (_locationData.locationType == LocationType.DRONE)
+                        {
+                            OpenPanelNavigationToBuilding();
+                        }
+                        else OpenPanelNavigationToFacility();
+                    };
                     break;
             }
 

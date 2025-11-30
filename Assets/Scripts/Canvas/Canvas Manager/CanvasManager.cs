@@ -136,6 +136,8 @@ namespace Tour360TelkomCorpu.CanvasManager
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
 
             _buttonBooking.gameObject.SetActive(isCanBooking);
+
+            if (_topbarDropDown.activeSelf) _topbarDropDown.SetActive(!_topbarDropDown.activeSelf);
         }
 
         public bool AnyPanelOpenNow()
