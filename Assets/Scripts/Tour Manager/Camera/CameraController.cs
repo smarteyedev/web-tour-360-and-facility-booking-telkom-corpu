@@ -60,7 +60,8 @@ namespace Tour360TelkomCorpu.TourManager
                 zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
             }
 
-            _canvasManager.SetupButtonAutoRotation(AutoRotationToggle);
+            _canvasManager.buttonAutoRotation.IsActive = true;
+            _canvasManager.buttonAutoRotation.onToggleChanged.AddListener((v) => autoRotate = v);
         }
 
         void Update()
@@ -103,6 +104,7 @@ namespace Tour360TelkomCorpu.TourManager
                 if (holdLongEnough && isMoving)
                 {
                     autoRotate = false;
+                    _canvasManager.buttonAutoRotation.IsActive = autoRotate;
                 }
 
                 // rotasi normal
@@ -177,11 +179,6 @@ namespace Tour360TelkomCorpu.TourManager
         {
             targetFOV = Mathf.Lerp(minFOV, maxFOV, v);
             autoRotate = false;
-        }
-
-        public void AutoRotationToggle()
-        {
-            autoRotate = !autoRotate;
         }
 
         public void ZoomWithFallTransition(float cameraY, Action onStartTransition, Action onFinishTransition)

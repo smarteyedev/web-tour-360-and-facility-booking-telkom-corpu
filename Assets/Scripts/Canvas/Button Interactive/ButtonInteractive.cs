@@ -9,7 +9,7 @@ using System.Linq;
 public class ButtonInteractive : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 {
     [Header("Configuration References")]
-    private EventState m_eventState = EventState.Default;
+    protected EventState m_eventState = EventState.Default;
     public bool isInteractable = false;
     [SerializeField] protected List<ButtonAsset> _assetList = new List<ButtonAsset>();
 

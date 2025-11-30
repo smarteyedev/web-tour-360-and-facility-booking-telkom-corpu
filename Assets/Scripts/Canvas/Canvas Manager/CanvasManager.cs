@@ -16,7 +16,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private TextMeshProUGUI _textLocationName;
         [SerializeField] private Button _buttonOpenPanelInformation;
         [SerializeField] private GameObject _topbarDropDown;
-        [SerializeField] private Button _buttonAutoRotation;
+        public ButtonToggle buttonAutoRotation;
         [SerializeField] private Button _buttonBooking;
 
         [Header("Component References")]
@@ -149,11 +149,6 @@ namespace Tour360TelkomCorpu.CanvasManager
         public bool AnyPanelOpenNow()
         {
             return m_currentActivePanel.Count > 0 && m_currentActivePanel != null;
-        }
-
-        public void SetupButtonAutoRotation(Action onClick)
-        {
-            _buttonAutoRotation.onClick.AddListener(() => onClick?.Invoke());
         }
 
         public void ToggleTopbarDropDown()
