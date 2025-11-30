@@ -15,6 +15,8 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private Button _buttonOpenPanelInformation;
         [SerializeField] private Button _buttonAutoRotation;
         [SerializeField] private GameObject _topbarDropDown;
+        [SerializeField] private GameObject _topbarMenu;
+        [SerializeField] private GameObject _bottombarMenu;
 
         [Header("Component References")]
         public LoadingScreenHandler loadingScreen;
@@ -118,6 +120,12 @@ namespace Tour360TelkomCorpu.CanvasManager
                 Debug.Log($"[CanvasManager.cs]: All panel are closed | Current active panel: {m_currentActivePanel.Count}");
 #endif
             }
+        }
+
+        public void SetActiveBarMenu(bool isActive)
+        {
+            _topbarMenu.SetActive(isActive);
+            _bottombarMenu.SetActive(isActive);
         }
 
         public void SetLocationPlank(string locationName, Action onClickPanelInfo)

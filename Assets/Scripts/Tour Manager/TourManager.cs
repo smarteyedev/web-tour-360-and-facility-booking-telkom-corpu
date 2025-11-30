@@ -163,11 +163,12 @@ namespace Tour360TelkomCorpu.TourManager
                 locationIndex: targetIndex,
                 onValidStart: () =>
                 {
-                    HideHotspot();
-                    _canvasManager.CloseAllPanel();
                     m_isTryToLoadingAsset = true;
-
                     _canvasManager.loadingScreen.ShowLoadingGif(false);
+
+                    HideHotspot();
+
+                    _canvasManager.CloseAllPanel();
                 },
                 onDone: (data) =>
                 {
@@ -175,6 +176,12 @@ namespace Tour360TelkomCorpu.TourManager
                     {
                         _locationData = data;
                         m_currentLocationIndex = targetIndex;
+
+                        if (_visitedLocationIndexList.Count == 0)
+                        {
+                            _canvasManager.SetActiveBarMenu(false);
+                            _canvasManager.OpenPanel(PanelType.GuidanceSection, $"Buka Guidance", (object a) => { _canvasManager.SetActiveBarMenu(true); }, null);
+                        }
 
                         if (_visitedLocationIndexList.Count == 0 || m_currentLocationIndex != _visitedLocationIndexList[_visitedLocationIndexList.Count - 1])
                             _visitedLocationIndexList.Add(m_currentLocationIndex);

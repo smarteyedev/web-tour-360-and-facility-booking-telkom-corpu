@@ -5,7 +5,7 @@ using System;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelGuidanceSection : PanelController<List<Sprite>, string>
+    public class PanelGuidanceSection : PanelController<string, string>
     {
 
         [Header("Guidance Section")]
@@ -14,29 +14,35 @@ namespace Tour360TelkomCorpu.CanvasManager
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
         [SerializeField] private Image _Imageoverlay;
+        [SerializeField] private Button _buttonNext;
+        [SerializeField] private Button _buttonClose;
 
-        private int _currentIndex = 0;
+        private int m_currentIndex = 0;
+        private Action m_onFinished = null;
 
 
-        protected override void ShowPanel(List<Sprite> assetSpriteList, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
+        protected override void ShowPanel(string assetSpriteList, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
         {
             if (_panelContainer != null)
             {
                 _panelContainer.SetActive(true);
             }
 
-            if (assetSpriteList != null && assetSpriteList.Count > 0)
+            m_onFinished = () =>
             {
-                m_guidanceSpriteList = assetSpriteList;
-                _currentIndex = 0;
+                onClosePanel?.Invoke();
+                callbackUsingDocumentId?.Invoke("");
+            };
 
-                SetupAsset(m_guidanceSpriteList[_currentIndex]);
-            }
-            else
-            {
-                Debug.LogWarning("[Guidance] Daftar sprite panduan kosong.");
-                HidePanel();
-            }
+            _buttonClose.gameObject.SetActive(false);
+            _buttonClose.onClick.RemoveAllListeners();
+            _buttonClose.onClick.AddListener(() => m_onFinished?.Invoke());
+
+            _buttonNext.onClick.RemoveAllListeners();
+            _buttonNext.onClick.AddListener(() => OnClickNextGuidance());
+
+            m_currentIndex = 0;
+            SetupAsset(m_guidanceSpriteList[m_currentIndex]);
         }
 
         public override void HidePanel()
@@ -45,27 +51,22 @@ namespace Tour360TelkomCorpu.CanvasManager
             {
                 _panelContainer.SetActive(false);
             }
-
-            if (_Imageoverlay != null)
-            {
-                _Imageoverlay.sprite = null;
-            }
-
-            Debug.Log("[Guidance] Panel disembunyikan.");
         }
 
         protected void OnClickNextGuidance()
         {
             int totalSlides = m_guidanceSpriteList.Count;
 
-            if (_currentIndex < totalSlides - 1)
+            if (m_currentIndex < totalSlides - 1)
             {
-                _currentIndex++;
-                SetupAsset(m_guidanceSpriteList[_currentIndex]);
+                m_currentIndex++;
+                SetupAsset(m_guidanceSpriteList[m_currentIndex]);
+
+                _buttonClose.gameObject.SetActive(true);
             }
-            else if (_currentIndex == totalSlides - 1)
+            else if (m_currentIndex == totalSlides - 1)
             {
-                HidePanel();
+                m_onFinished?.Invoke();
             }
         }
 
@@ -74,7 +75,6 @@ namespace Tour360TelkomCorpu.CanvasManager
             if (_Imageoverlay != null && assetSprite != null)
             {
                 _Imageoverlay.sprite = assetSprite;
-
             }
         }
     }
