@@ -104,6 +104,7 @@ namespace Tour360TelkomCorpu.TourManager
         public void GetTelkomCorpuDataMaster(string _documentId)
         {
             m_isTryToLoadingAsset = true;
+
             StartCoroutine(_canvasManager.loadingScreen.LoadingScreenForApiProcess(
                 _loadingProcess: _dataManager.GetTelkomCorpuDataMaster,
                 _documentId: _documentId,
@@ -165,6 +166,8 @@ namespace Tour360TelkomCorpu.TourManager
                     HideHotspot();
                     _canvasManager.CloseAllPanel();
                     m_isTryToLoadingAsset = true;
+
+                    _canvasManager.loadingScreen.ShowLoadingGif(false);
                 },
                 onDone: (data) =>
                 {
@@ -295,6 +298,7 @@ namespace Tour360TelkomCorpu.TourManager
                         );
                         // END: SET ASSET FUNCTION ...
 
+                        _canvasManager.loadingScreen.HideLoadingGif();
                         m_isTryToLoadingAsset = false;
                     }
                     else

@@ -211,7 +211,9 @@ namespace Smarteye.RestAPI
             foreach (var pair in targets)
             {
                 var assignAction = pair.Key; // ini fungsi yang nanti akan mengisi variabel
-                string url = pair.Value;
+                string url = NormalizeAssetUrl(pair.Value);
+
+                Debug.Log($"[RestAPI]: Get texture from {url}");
 
                 using (var req = UnityWebRequestTexture.GetTexture(url, false))
                 {
@@ -310,6 +312,32 @@ namespace Smarteye.RestAPI
 #endif
                 }
             }
+        }
+
+        private string NormalizeAssetUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return url;
+
+            // buang prefix file:// kalau ada
+            if (url.StartsWith("file://"))
+                url = url.Substring("file://".Length);
+
+            // kalau sudah http(s), biarkan saja
+            if (url.StartsWith("http://") || url.StartsWith("https://"))
+                return url;
+
+            // kalau cuma "/uploads/..." atau "uploads/..."
+            string baseUrl = targetAPIConfig.baseUrl.TrimEnd('/'); // "http://localhost:1337"
+
+            if (url.StartsWith("/uploads/"))
+                return baseUrl + url;
+
+            if (url.StartsWith("uploads/"))
+                return baseUrl + "/" + url;
+
+            // fallback: baseUrl + "/" + apa pun string-nya
+            return baseUrl + "/" + url.TrimStart('/');
         }
 
         #endregion
