@@ -59,7 +59,7 @@ public class ButtonInteractive : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     protected virtual void Enable()
     {
-        SetupDefaultAsset(_imageButton.sprite, _textButton.color);
+        // SetupDefaultAsset(_imageButton.sprite, _textButton.color);
         // Set initial button state to default
         m_eventState = EventState.Default;
         OnEventStateUpdate(m_eventState);
@@ -67,7 +67,11 @@ public class ButtonInteractive : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
     protected virtual void OnDisable()
     {
-
+        if (m_eventState == EventState.OnClickLeftMouse)
+        {
+            m_eventState = EventState.Default;
+            OnEventStateUpdate(m_eventState);
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Tour360TelkomCorpu.TourManager
 {
@@ -195,7 +196,10 @@ namespace Tour360TelkomCorpu.TourManager
                             onStartTransition: null,
                             onFinishTransition: () =>
                             {
-                                _canvasManager.SetLocationData(_locationData.name, _locationData.bookable_status, GenerateShowLocationDescriptionAction());
+                                _canvasManager.SetLocationDataUI(_locationData.name, GenerateShowLocationDescriptionAction(), _locationData.bookable_status, () =>
+                                {
+                                    _canvasManager.OpenPanel(PanelType.BookingSection, new FormatPanelBooking($"", $"https://facilitycorpu.id/booking/create?type=classroom&&classroom={5}"), (object link) => OpenLink((string)link), null);
+                                });
 
                                 if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
                                 {
@@ -437,7 +441,7 @@ namespace Tour360TelkomCorpu.TourManager
                         dFacility.descriptionText = _locationData.description_text;
                         dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
                         dFacility.isCanBook = _locationData.bookable_status;
-                        dFacility.onOpenPanelBooking = () => Debug.Log($"Open panel booking"); ;
+                        dFacility.onOpenPanelBooking = () => _canvasManager.OpenPanel(PanelType.BookingSection, new FormatPanelBooking($"", $"https://facilitycorpu.id/booking/create?type=classroom&&classroom={5}"), (object link) => OpenLink((string)link), null);
                         dFacility.isAutoShow = _isAlwaysShowLocationDescription;
                         _canvasManager.OpenPanel(PanelType.FacilityDescription, dFacility, (object newVal) => _isAlwaysShowLocationDescription = (bool)newVal, null);
                     };
@@ -535,6 +539,20 @@ namespace Tour360TelkomCorpu.TourManager
                 onProgress: (float progress) => { },
                 forceRedownload: false
             ));
+        }
+
+        [DllImport("__Internal")]
+        private static extern void OpenInSameTab(string url);
+        public void OpenLink(string targetUrl)
+        {
+            if (string.IsNullOrEmpty(targetUrl))
+                return;
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+            OpenInSameTab(targetUrl);
+#else
+            Application.OpenURL(targetUrl);
+#endif
         }
     }
 }

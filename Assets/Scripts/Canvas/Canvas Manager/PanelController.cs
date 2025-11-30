@@ -18,6 +18,19 @@ namespace Tour360TelkomCorpu.CanvasManager
     }
 
     [Serializable]
+    public class FormatPanelBooking
+    {
+        public string facilityName;
+        public string urlBooking;
+
+        public FormatPanelBooking(string name, string url)
+        {
+            facilityName = name;
+            urlBooking = url;
+        }
+    }
+
+    [Serializable]
     public class FormatPanelDescriptionAsset
     {
         public string descriptionText;

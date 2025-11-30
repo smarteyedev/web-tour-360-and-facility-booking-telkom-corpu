@@ -1,54 +1,40 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
-using System.Runtime.InteropServices;
+using TMPro;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
-    public class PanelBooking : PanelController<string, string>
+    public class PanelBooking : PanelController<FormatPanelBooking, string>
     {
-        [DllImport("__Internal")]
-        private static extern void OpenInSameTab(string url);
-
         [Header("Guidance Section")]
 
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
-        [SerializeField] private Button _buttonClose;
+        [SerializeField] private TextMeshProUGUI _textMessage;
+        [SerializeField] private ButtonInteractive _buttonYes;
+        [SerializeField] private ButtonInteractive _buttonNo;
 
-        protected override void ShowPanel(
-            string contentData,
-            Action<string> callbackUsingDocumentId = null,
-            Action onClosePanel = null)
+        protected override void ShowPanel(FormatPanelBooking contentData, Action<string> callback = null, Action onClosePanel = null)
         {
             if (_panelContainer != null)
                 _panelContainer.SetActive(true);
 
-            _buttonClose.onClick.AddListener(() =>
-            {
-                HidePanel();
-            });
+            _textMessage.text = $"Are you sure want to book {contentData.facilityName}?";
+            _buttonYes.onLeftMouseDown.RemoveAllListeners();
+            _buttonYes.onLeftMouseDown.AddListener(() => callback?.Invoke(contentData.urlBooking));
 
-            callbackUsingDocumentId?.Invoke(contentData);
+            _buttonNo.onLeftMouseDown.RemoveAllListeners();
+            _buttonNo.onLeftMouseDown.AddListener(() =>
+            {
+                onClosePanel();
+            });
         }
 
         public override void HidePanel()
         {
             if (_panelContainer != null)
                 _panelContainer.SetActive(false);
-        }
-
-
-        public void OpenLink(string targetUrl)
-        {
-            if (string.IsNullOrEmpty(targetUrl))
-                return;
-
-#if UNITY_WEBGL && !UNITY_EDITOR
-            OpenInSameTab(targetUrl);
-#else
-            Application.OpenURL(targetUrl);
-#endif
         }
     }
 }

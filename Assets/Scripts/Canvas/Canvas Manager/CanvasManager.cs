@@ -129,13 +129,19 @@ namespace Tour360TelkomCorpu.CanvasManager
             _bottombarMenu.SetActive(isActive);
         }
 
-        public void SetLocationData(string locationName, bool isCanBooking, Action onClickPanelInfo)
+        public void SetLocationDataUI(string locationName, Action onClickPanelInfo, bool isCanBooking, Action onClickBookingPanel)
         {
             _textLocationName.text = locationName;
             _buttonOpenPanelInformation.onClick.RemoveAllListeners();
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
 
             _buttonBooking.gameObject.SetActive(isCanBooking);
+
+            if (isCanBooking)
+            {
+                _buttonBooking.onClick.RemoveAllListeners();
+                _buttonBooking.onClick.AddListener(() => onClickBookingPanel?.Invoke());
+            }
 
             if (_topbarDropDown.activeSelf) _topbarDropDown.SetActive(!_topbarDropDown.activeSelf);
         }
