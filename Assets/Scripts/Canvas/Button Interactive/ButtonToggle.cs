@@ -74,6 +74,10 @@ namespace Tour360TelkomCorpu.CanvasManager
             if (_imageButton != null)
             {
                 _imageButton.sprite = isActive ? backgroundActive : backgroundInactive;
+
+                Color currentColor = _imageButton.color;
+                currentColor.a = isActive ? 1f : .7f;
+                _imageButton.color = currentColor;
             }
 
             // Icon dari toggle state (ON/OFF)

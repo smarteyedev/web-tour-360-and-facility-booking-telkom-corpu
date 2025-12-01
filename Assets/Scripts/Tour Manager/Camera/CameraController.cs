@@ -188,6 +188,7 @@ namespace Tour360TelkomCorpu.TourManager
                 : 0f;
 
             horizontal.localRotation = Quaternion.Euler(0f, targetYaw, 0f);
+            vertical.localRotation = Quaternion.Euler(0f, 0f, 0f);
         }
 
         public void ZoomWithFallTransition(float cameraY, Action onStartTransition, Action onFinishTransition)

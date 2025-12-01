@@ -84,7 +84,8 @@ namespace Tour360TelkomCorpu.TourManager
 
             HoverAnimation(false);
             _canvasGroupHotspot.alpha = 0f;
-            m_targetPosition.SetActive(false);
+            if (m_targetPosition)
+                m_targetPosition.SetActive(false);
         }
 
         private void Update()

@@ -103,6 +103,8 @@ namespace Tour360TelkomCorpu.TourManager
             StartCoroutine(_dataManager.RequestTelkomCorpuAreaOptionContent((data) =>
             {
                 _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, null, (object documentId) => GetTelkomCorpuDataMaster((string)documentId), null);
+                _visitedLocationIndexList.Clear();
+                m_currentLocationIndex = 0;
             },
                 (progress) => { /* Debug.Log($"{progress}") */ },
                 false
@@ -192,11 +194,6 @@ namespace Tour360TelkomCorpu.TourManager
                                 {
                                     _canvasManager.OpenPanel(PanelType.BookingSection, new FormatPanelBooking($"", $"https://facilitycorpu.id/booking/create?type=classroom&&classroom={5}"), (object link) => OpenLink((string)link), null);
                                 });
-
-                                if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
-                                {
-                                    GenerateShowLocationDescriptionAction()?.Invoke();
-                                }
 
                                 if (_locationData.locationType == LocationType.FACILITY && _locationData.gallery.Count > 0)
                                 {
@@ -300,6 +297,11 @@ namespace Tour360TelkomCorpu.TourManager
 
                                 _canvasManager.loadingScreen.HideLoadingGif();
                                 m_isTryToLoadingAsset = false;
+
+                                if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
+                                {
+                                    GenerateShowLocationDescriptionAction()?.Invoke();
+                                }
                             }
                         );
                         // END: SET ASSET FUNCTION ...
