@@ -5,7 +5,7 @@ using System;
 using DG.Tweening;
 
 
-namespace Tour360TelkomCorpu.SphereController
+namespace Tour360TelkomCorpu.TourManager
 {
     public class SphereController : MonoBehaviour
     {
@@ -81,7 +81,7 @@ namespace Tour360TelkomCorpu.SphereController
         }
 
         // Hitung radius world sphere
-        public float GetSphereRadius()
+        private float GetSphereRadius()
         {
             if (_sphereTransform == null) return 1f;
             MeshFilter mf = _sphereTransform.GetComponent<MeshFilter>();

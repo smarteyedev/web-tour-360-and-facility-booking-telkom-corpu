@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -9,8 +8,6 @@ namespace Tour360TelkomCorpu.TourManager
 {
     using Tour360TelkomCorpu.DataManager;
     using Tour360TelkomCorpu.CanvasManager;
-    using Tour360TelkomCorpu.HotspotHandler;
-    using Tour360TelkomCorpu.SphereController;
 
     public class TourManager : MonoBehaviour
     {
@@ -67,6 +64,10 @@ namespace Tour360TelkomCorpu.TourManager
                 _onComplete: () =>
                 {
                     // loading process complete
+
+                    MusicManager.Main.SetVolume(maxVolumeMasterAudio, 0);
+                    MusicManager.Main.PlayFromLibrary("Backsound");
+
                     StartCoroutine(_dataManager.RequestTelkomCorpuAreaOptionContent(
                         (data) =>
                         {

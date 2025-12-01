@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 
-namespace Tour360TelkomCorpu.HotspotHandler
+namespace Tour360TelkomCorpu.TourManager
 {
     public class HotspotHandler : ButtonInteractive
     {
