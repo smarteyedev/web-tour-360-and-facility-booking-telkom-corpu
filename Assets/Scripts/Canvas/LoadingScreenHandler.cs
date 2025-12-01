@@ -3,28 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using TMPro;
 
 namespace Tour360TelkomCorpu.CanvasManager
 {
     public class LoadingScreenHandler : MonoBehaviour
     {
         [Header("UI Component References")]
-        [SerializeField] public GameObject _screenPanel;
+        [SerializeField] private GameObject _screenPanel;
+        [SerializeField] private Image _imageBackground;
+        [SerializeField] private Image _gifImage;
+        [SerializeField] private TextMeshProUGUI _textLoadingMassage;
         [SerializeField] private Slider _loadingBar;
 
         [Header("GIF Animation")]
-        [SerializeField] private Image _gifImage;           // tempat tampil GIF
         [SerializeField] private List<Sprite> _gifFrames;   // frame-frame GIF
         [SerializeField] private float _gifSpeed = 0.08f;   // kecepatan animasi
+        private Coroutine m_currentAnimation = null;
+        private bool m_isStillHasApiProcess = false;
 
         public IEnumerator LoadingScreenForApiProcess(Func<Action<bool>, string, IEnumerator> _loadingProcess, String _documentId, Action _onComplete = null, Action _onError = null)
         {
-
-
             _screenPanel.SetActive(true);
+            ShowLoadingGif(true);
+            _textLoadingMassage.gameObject.SetActive(true);
+            _loadingBar.gameObject.SetActive(true);
+
+            m_isStillHasApiProcess = true;
+
             _loadingBar.value = 0f;
             float _visualProgress = 0f;
             float _speed = 0.5f;
+
 
             // Simulasi progres visual hingga mendekati 100%
             while (_visualProgress < 0.20f)
@@ -53,8 +63,12 @@ namespace Tour360TelkomCorpu.CanvasManager
                 _loadingBar.value = 1f;
                 // yield return new WaitForSeconds(0.5f); // jeda
 
+                m_isStillHasApiProcess = false;
+
                 _screenPanel.SetActive(false);
-                _loadingBar.value = 0f;
+                HideLoadingGif();
+                _textLoadingMassage.gameObject.SetActive(false);
+                _loadingBar.gameObject.SetActive(false);
             }
             else
             {
@@ -65,13 +79,28 @@ namespace Tour360TelkomCorpu.CanvasManager
             }
         }
 
-        public void Start()
+        public void ShowLoadingGif(bool isUsingBackground)
         {
-            // Mulai animasi GIF ketika object aktif
-            StartCoroutine(LoadingAnimation());
+            if (m_currentAnimation != null) return;
+
+            if (!_screenPanel.activeSelf) _screenPanel.SetActive(true);
+            _imageBackground.enabled = isUsingBackground;
+
+            _gifImage.gameObject.SetActive(true);
+            m_currentAnimation = StartCoroutine(LoadingAnimation());
         }
 
-        public IEnumerator LoadingAnimation()
+        public void HideLoadingGif()
+        {
+            if (m_currentAnimation == null || m_isStillHasApiProcess) return;
+
+            StopCoroutine(m_currentAnimation);
+            m_currentAnimation = null;
+            _gifImage.gameObject.SetActive(false);
+            if (_screenPanel.activeSelf) _screenPanel.SetActive(false);
+        }
+
+        private IEnumerator LoadingAnimation()
         {
             if (_gifFrames == null || _gifFrames.Count == 0)
                 yield break;

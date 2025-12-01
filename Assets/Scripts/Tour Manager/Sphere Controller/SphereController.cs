@@ -5,7 +5,7 @@ using System;
 using DG.Tweening;
 
 
-namespace Tour360TelkomCorpu.SphereController
+namespace Tour360TelkomCorpu.TourManager
 {
     public class SphereController : MonoBehaviour
     {
@@ -13,9 +13,9 @@ namespace Tour360TelkomCorpu.SphereController
         [SerializeField] private Transform _sphereTransform; // assign sphere GameObject
         [SerializeField] private float _surfaceOffset = 0.01f; // small offset to avoid clipping
 
-        public void ChangeTextureWithFade(Texture targetTexture, Action onStartTransition, Action onFinishTransition)
+        public void ChangeTextureWithFade(Texture targetTexture, float duration, Action onStartTransition, Action onFinishTransition)
         {
-            float transitionDuration = 1.0f;
+            float transitionDuration = duration;
             Tween currentTween;
             bool useFadeTransition = true;
 
@@ -81,7 +81,7 @@ namespace Tour360TelkomCorpu.SphereController
         }
 
         // Hitung radius world sphere
-        public float GetSphereRadius()
+        private float GetSphereRadius()
         {
             if (_sphereTransform == null) return 1f;
             MeshFilter mf = _sphereTransform.GetComponent<MeshFilter>();

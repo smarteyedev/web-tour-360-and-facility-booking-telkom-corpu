@@ -6,9 +6,6 @@ namespace Tour360TelkomCorpu.TourManager
     using System;
     using DG.Tweening;
     using Tour360TelkomCorpu.CanvasManager;
-
-
-
     public class CameraController : MonoBehaviour
     {
         [Header("Rotation")]
@@ -31,7 +28,6 @@ namespace Tour360TelkomCorpu.TourManager
         private bool applyingInertia = false;
 
         private Vector3 lastMousePos;
-
         private float verticalAngle = 0f;
 
         [Header("Auto Rotate")]
@@ -42,29 +38,30 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private float autoRotateSpeed = 5f;
 
         [Header("Zoom")]
-        [SerializeField] private float minFOV;
-        [SerializeField] private float maxFOV;
+        [SerializeField] private float minFOV = 20f;
+        [SerializeField] private float maxFOV = 60f;
         [SerializeField] private float zoomSmooth = 6f;
-        [SerializeField] private float targetFOV;
+        [SerializeField] private float targetFOV = 57f;
 
         [Header("Component References")]
         public Camera cam;
-
+        [SerializeField] private Slider zoomSlider;
         [SerializeField] private CanvasManager _canvasManager;
 
         void Start()
         {
             if (cam == null) cam = Camera.main;
-            
-            //if (zoomSlider != null)
-            //{
-            //    zoomSlider.minValue = 0;
-            //    zoomSlider.maxValue = 1;
-            //    targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
-            //    zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
-            //}
 
-            _canvasManager.SetupButtonAutoRotation(AutoRotationToggle);
+            if (zoomSlider != null)
+            {
+                zoomSlider.minValue = 0;
+                zoomSlider.maxValue = 1;
+                targetFOV = Mathf.Lerp(minFOV, maxFOV, zoomSlider.value);
+                zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
+            }
+
+            _canvasManager.buttonAutoRotation.IsActive = true;
+            _canvasManager.buttonAutoRotation.onToggleChanged.AddListener((v) => autoRotate = v);
         }
 
         void Update()
@@ -107,6 +104,7 @@ namespace Tour360TelkomCorpu.TourManager
                 if (holdLongEnough && isMoving)
                 {
                     autoRotate = false;
+                    _canvasManager.buttonAutoRotation.IsActive = autoRotate;
                 }
 
                 // rotasi normal
@@ -170,8 +168,8 @@ namespace Tour360TelkomCorpu.TourManager
                 targetFOV -= scroll * 20f;
                 targetFOV = Mathf.Clamp(targetFOV, minFOV, maxFOV);
 
-                //if (zoomSlider != null)
-                //    zoomSlider.SetValueWithoutNotify(Mathf.InverseLerp(minFOV, maxFOV, targetFOV));
+                if (zoomSlider != null)
+                    zoomSlider.SetValueWithoutNotify(Mathf.InverseLerp(minFOV, maxFOV, targetFOV));
             }
 
             cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * zoomSmooth);
@@ -183,20 +181,24 @@ namespace Tour360TelkomCorpu.TourManager
             autoRotate = false;
         }
 
-        public void AutoRotationToggle()
+        public void SetHorizontalRotaion(float cameraY)
         {
-            autoRotate = !autoRotate;
+            float targetYaw = (cameraY >= 0f && cameraY <= 1f) //harus ada kondisi jika cameraY diluar 0-1 dan default nya dijadikan 0 
+                ? cameraY * 360f
+                : 0f;
+
+            horizontal.localRotation = Quaternion.Euler(0f, targetYaw, 0f);
         }
 
-        public void ZoomWithFallTransition(float cameraY, Action onStartTransition, Action onFinishTransition )
+        public void ZoomWithFallTransition(float cameraY, Action onStartTransition, Action onFinishTransition)
         {
             onStartTransition?.Invoke();
             // Convert 0–1 to 0–360
 
             float targetYaw = (cameraY >= 0f && cameraY <= 1f) //harus ada kondisi jika cameraY diluar 0-1 dan default nya dijadikan 0 
-                ? cameraY * 360f 
+                ? cameraY * 360f
                 : 0f;
-           
+
             float startAngle = 80f;
             float endAngle = 0f;
             float startHeight = 0.6f;
@@ -247,6 +249,5 @@ namespace Tour360TelkomCorpu.TourManager
                 Debug.Log("Drone animation finished");
             });
         }
-
     }
 }

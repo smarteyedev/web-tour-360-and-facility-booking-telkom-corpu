@@ -11,10 +11,13 @@ namespace Tour360TelkomCorpu.CanvasManager
     public class CanvasManager : MonoBehaviour
     {
         [Header("Component Menu Bar")]
+        [SerializeField] private GameObject _topbarMenu;
+        [SerializeField] private GameObject _bottombarMenu;
         [SerializeField] private TextMeshProUGUI _textLocationName;
         [SerializeField] private Button _buttonOpenPanelInformation;
-        [SerializeField] private Button _buttonAutoRotation;
         [SerializeField] private GameObject _topbarDropDown;
+        public ButtonToggle buttonAutoRotation;
+        [SerializeField] private Button _buttonBooking;
 
         [Header("Component References")]
         public LoadingScreenHandler loadingScreen;
@@ -120,21 +123,32 @@ namespace Tour360TelkomCorpu.CanvasManager
             }
         }
 
-        public void SetLocationPlank(string locationName, Action onClickPanelInfo)
+        public void SetActiveBarMenu(bool isActive)
+        {
+            _topbarMenu.SetActive(isActive);
+            _bottombarMenu.SetActive(isActive);
+        }
+
+        public void SetLocationDataUI(string locationName, Action onClickPanelInfo, bool isCanBooking, Action onClickBookingPanel)
         {
             _textLocationName.text = locationName;
             _buttonOpenPanelInformation.onClick.RemoveAllListeners();
             _buttonOpenPanelInformation.onClick.AddListener(() => onClickPanelInfo?.Invoke());
+
+            _buttonBooking.gameObject.SetActive(isCanBooking);
+
+            if (isCanBooking)
+            {
+                _buttonBooking.onClick.RemoveAllListeners();
+                _buttonBooking.onClick.AddListener(() => onClickBookingPanel?.Invoke());
+            }
+
+            if (_topbarDropDown.activeSelf) _topbarDropDown.SetActive(!_topbarDropDown.activeSelf);
         }
 
         public bool AnyPanelOpenNow()
         {
             return m_currentActivePanel.Count > 0 && m_currentActivePanel != null;
-        }
-
-        public void SetupButtonAutoRotation(Action onClick)
-        {
-            _buttonAutoRotation.onClick.AddListener(() => onClick?.Invoke());
         }
 
         public void ToggleTopbarDropDown()
