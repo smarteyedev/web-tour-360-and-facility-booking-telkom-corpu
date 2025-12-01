@@ -181,6 +181,15 @@ namespace Tour360TelkomCorpu.TourManager
             autoRotate = false;
         }
 
+        public void SetHorizontalRotaion(float cameraY)
+        {
+            float targetYaw = (cameraY >= 0f && cameraY <= 1f) //harus ada kondisi jika cameraY diluar 0-1 dan default nya dijadikan 0 
+                ? cameraY * 360f
+                : 0f;
+
+            horizontal.localRotation = Quaternion.Euler(0f, targetYaw, 0f);
+        }
+
         public void ZoomWithFallTransition(float cameraY, Action onStartTransition, Action onFinishTransition)
         {
             onStartTransition?.Invoke();

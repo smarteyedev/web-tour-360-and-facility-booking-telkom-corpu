@@ -13,9 +13,9 @@ namespace Tour360TelkomCorpu.SphereController
         [SerializeField] private Transform _sphereTransform; // assign sphere GameObject
         [SerializeField] private float _surfaceOffset = 0.01f; // small offset to avoid clipping
 
-        public void ChangeTextureWithFade(Texture targetTexture, Action onStartTransition, Action onFinishTransition)
+        public void ChangeTextureWithFade(Texture targetTexture, float duration, Action onStartTransition, Action onFinishTransition)
         {
-            float transitionDuration = 1.0f;
+            float transitionDuration = duration;
             Tween currentTween;
             bool useFadeTransition = true;
 

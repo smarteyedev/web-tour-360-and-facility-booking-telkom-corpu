@@ -43,6 +43,12 @@ namespace Tour360TelkomCorpu.TourManager
 
         private bool m_isTryToLoadingAsset = false;
 
+        [Serializable]
+        public enum TransitionAnimType
+        {
+            FadeBackground, CameraZoomInAndFall, CameraZoomIn
+        }
+
         private void Start()
         {
             StartApplication();
@@ -133,29 +139,6 @@ namespace Tour360TelkomCorpu.TourManager
             SetupLocationAsset(targetIndex);
         }
 
-        public void NextLocation()
-        {
-            if (m_isTryToLoadingAsset == true) return;
-
-            SetupLocationAsset(m_currentLocationIndex + 1);
-        }
-
-        public void PreviousLocation()
-        {
-            if (m_isTryToLoadingAsset == true) return;
-
-            if (_visitedLocationIndexList.Count > 1)
-            {
-                _visitedLocationIndexList.RemoveAt(_visitedLocationIndexList.Count - 1);
-                SetupLocationAsset(_visitedLocationIndexList[_visitedLocationIndexList.Count - 1]);
-            }
-        }
-
-        public void SetFullscreen()
-        {
-            Screen.fullScreen = !Screen.fullScreen;
-        }
-
         public void SetupLocationAsset(int targetIndex)
         {
             if (m_isTryToLoadingAsset == true) return;
@@ -191,10 +174,18 @@ namespace Tour360TelkomCorpu.TourManager
 #endif
 
                         // START: SET ASSET FUNCTION ...
-                        _sphereController.ChangeTextureWithFade(
-                            _locationData.background_360_image.textureImage,
-                            onStartTransition: null,
-                            onFinishTransition: () =>
+
+                        TransitionAnimType _transitionType = _locationData.locationType == LocationType.DRONE ? TransitionAnimType.CameraZoomInAndFall : TransitionAnimType.FadeBackground;
+
+                        StartTransition(
+                            type: _transitionType,
+                            targetTexture: _locationData.background_360_image.textureImage,
+                            camRotation: _locationData.first_camera_pov,
+                            onStart: () =>
+                            {
+
+                            },
+                            onFinish: () =>
                             {
                                 _canvasManager.SetLocationDataUI(_locationData.name, GenerateShowLocationDescriptionAction(), _locationData.bookable_status, () =>
                                 {
@@ -246,12 +237,12 @@ namespace Tour360TelkomCorpu.TourManager
                                             }
                                             else
                                             {
-                                                InstantiateGalleryHotspot(item.hotspot_configuration);
+                                                InstantiateHotspotGalleryHotspot(item.hotspot_configuration);
                                             }
                                         }
                                         else
                                         {
-                                            InstantiateGalleryHotspot(item.hotspot_configuration);
+                                            InstantiateHotspotGalleryHotspot(item.hotspot_configuration);
                                         }
 
                                     }
@@ -285,7 +276,7 @@ namespace Tour360TelkomCorpu.TourManager
                                                 tHotspot.SetupHotspot(
                                                     hotspotName: navigationData.hotspot_configuration.hotspot_title,
                                                     iconSprite: navigationData.hotspot_configuration.hotspot_image.GetSpriteImage(),
-                                                    action: GenerateNavigationActionByType(navigationData),
+                                                    action: GenerateHotspotActionByType(navigationData),
                                                     position: targetPosition,
                                                     canvas: _canvasManager.GetComponent<Canvas>(),
                                                     rct: _canvasManager.GetComponent<RectTransform>(),
@@ -296,21 +287,21 @@ namespace Tour360TelkomCorpu.TourManager
                                             }
                                             else
                                             {
-                                                InstantiateHotspot(navigationData.hotspot_configuration, (HotspotHandler.HotspotType)tHotspotType, GenerateNavigationActionByType(navigationData));
+                                                InstantiateHotspot(navigationData.hotspot_configuration, (HotspotHandler.HotspotType)tHotspotType, GenerateHotspotActionByType(navigationData));
                                             }
                                         }
                                         else
                                         {
-                                            InstantiateHotspot(navigationData.hotspot_configuration, (HotspotHandler.HotspotType)tHotspotType, GenerateNavigationActionByType(navigationData));
+                                            InstantiateHotspot(navigationData.hotspot_configuration, (HotspotHandler.HotspotType)tHotspotType, GenerateHotspotActionByType(navigationData));
                                         }
                                     }
                                 }
+
+                                _canvasManager.loadingScreen.HideLoadingGif();
+                                m_isTryToLoadingAsset = false;
                             }
                         );
                         // END: SET ASSET FUNCTION ...
-
-                        _canvasManager.loadingScreen.HideLoadingGif();
-                        m_isTryToLoadingAsset = false;
                     }
                     else
                     {
@@ -322,6 +313,40 @@ namespace Tour360TelkomCorpu.TourManager
                 forceRedownload: false
             ));
         }
+
+        public void StartTransition(TransitionAnimType type, Texture targetTexture, float camRotation, Action onStart, Action onFinish)
+        {
+            switch (type)
+            {
+                case TransitionAnimType.FadeBackground:
+                    _sphereController.ChangeTextureWithFade(
+                            targetTexture: _locationData.background_360_image.textureImage,
+                            duration: 1.0f,
+                            onStartTransition: () =>
+                            {
+                                onStart?.Invoke();
+                                _cameraController.SetHorizontalRotaion(camRotation);
+                            },
+                            onFinishTransition: onFinish
+                        );
+
+                    break;
+                case TransitionAnimType.CameraZoomInAndFall:
+                    _sphereController.ChangeTextureWithFade(
+                                targetTexture: _locationData.background_360_image.textureImage,
+                                duration: .1f,
+                                onStartTransition: onStart,
+                                onFinishTransition: () =>
+                                {
+                                    _cameraController.ZoomWithFallTransition(camRotation, onStart, onFinish);
+                                }
+                            );
+                    break;
+            }
+        }
+
+
+        #region Hotspot Functionality
 
         private void InstantiateHotspot(HotspotConfiguration hotspotConfig, HotspotHandler.HotspotType hotspotType, Action onClickAction)
         {
@@ -359,7 +384,7 @@ namespace Tour360TelkomCorpu.TourManager
             }
         }
 
-        private void InstantiateGalleryHotspot(HotspotConfiguration config)
+        private void InstantiateHotspotGalleryHotspot(HotspotConfiguration config)
         {
             InstantiateHotspot(config, HotspotHandler.HotspotType.OpenPanelGallery, () =>
             {
@@ -378,7 +403,7 @@ namespace Tour360TelkomCorpu.TourManager
             });
         }
 
-        private Action GenerateNavigationActionByType(NavigationSetting settings)
+        private Action GenerateHotspotActionByType(NavigationSetting settings)
         {
             Action result = null;
 
@@ -500,6 +525,32 @@ namespace Tour360TelkomCorpu.TourManager
                 forceRedownload: false
             ));
         }
+        #endregion
+
+        #region Button Bar Functionality
+
+        public void NextLocation()
+        {
+            if (m_isTryToLoadingAsset == true) return;
+
+            SetupLocationAsset(m_currentLocationIndex + 1);
+        }
+
+        public void PreviousLocation()
+        {
+            if (m_isTryToLoadingAsset == true) return;
+
+            if (_visitedLocationIndexList.Count > 1)
+            {
+                _visitedLocationIndexList.RemoveAt(_visitedLocationIndexList.Count - 1);
+                SetupLocationAsset(_visitedLocationIndexList[_visitedLocationIndexList.Count - 1]);
+            }
+        }
+
+        public void SetFullscreen()
+        {
+            Screen.fullScreen = !Screen.fullScreen;
+        }
 
         public void OpenPanelNavigationToBuilding()
         {
@@ -554,5 +605,7 @@ namespace Tour360TelkomCorpu.TourManager
             Application.OpenURL(targetUrl);
 #endif
         }
+
+        #endregion
     }
 }
