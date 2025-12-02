@@ -119,7 +119,11 @@ namespace Tour360TelkomCorpu.TourManager
             onLeftMouseDown.RemoveAllListeners();
 
             if (action != null)
-                onLeftMouseDown.AddListener(() => action());
+                onLeftMouseDown.AddListener(() =>
+                {
+                    if (_canvasGroupHotspot.alpha == 0) return;
+                    action();
+                });
 
             if (m_targetPosition == null)
             {

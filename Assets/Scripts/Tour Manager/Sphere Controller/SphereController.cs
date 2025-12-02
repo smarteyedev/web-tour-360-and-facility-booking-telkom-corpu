@@ -48,6 +48,23 @@ namespace Tour360TelkomCorpu.TourManager
                     usingTexture = !usingTexture;
                     _Material.SetFloat("_Blend", usingTexture ? 0 : 1);
                     //Debug.Log("Transition Completed. Final Blend Value: " + _Material.GetFloat("_Blend"));
+
+                    if (blendValue == 0f)
+                    {
+                        // _Material.SetTexture("_Texture_A", null);
+                        var tex = _Material.GetTexture("_Texture_A");
+                        if (tex != null) Destroy(tex);
+                    }
+                    else
+                    {
+                        // _Material.SetTexture("_Texture_B", null);
+                        var tex = _Material.GetTexture("_Texture_B");
+                        if (tex != null) Destroy(tex);
+                    }
+
+                    Resources.UnloadUnusedAssets();
+                    GC.Collect();
+
                     onFinishTransition?.Invoke();
                 });
             }

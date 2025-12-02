@@ -424,12 +424,13 @@ namespace Tour360TelkomCorpu.DataManager
 
       onValidStart?.Invoke();
 
-      LocationDataModel locationTarget = _locationDataList[locationIndex];
+      var sourceLocation = _locationDataList[locationIndex];
 #if UNITY_EDITOR
-      Debug.Log($"[DataManager.cs]: Checking location {locationTarget.name} asset...");
+      Debug.Log($"[DataManager.cs]: Checking location {sourceLocation.name} asset...");
 #endif
+      LocationDataModel locationTarget = CloneLocationWithoutTextures(sourceLocation);
 
-      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+      /* var downloadTargets = new Dictionary<Action<Texture2D>, string>();
       bool needDownload = forceRedownload ? true : !locationTarget.IsInformationImageAssetDownloaded();
 
       if (needDownload)
@@ -442,6 +443,15 @@ namespace Tour360TelkomCorpu.DataManager
       }
 
       if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(locationTarget);
+        yield break;
+      } */
+
+      var downloadTargets = locationTarget.GetDownloadableInformationImageAssetList(restAPI.targetAPIConfig.baseUrl);
+
+      if (downloadTargets == null || downloadTargets.Count == 0)
       {
         onProgress?.Invoke(1f);
         onDone?.Invoke(locationTarget);
@@ -495,16 +505,15 @@ namespace Tour360TelkomCorpu.DataManager
 
       onValidStart?.Invoke();
 
-      List<LocationDataModel> locationTarget = new List<LocationDataModel>();
-      locationTarget = _locationDataList
+      // List<LocationDataModel> locationTarget = new List<LocationDataModel>();
+      var sourceLocations = _locationDataList
         .Where(loc =>
             loc.locationType == LocationType.FACILITY &&
             loc.building_parent != null &&
-            loc.building_parent.documentId == parentDocumentId &&
-            loc.show_on_menu_panel == true)
+            loc.building_parent.documentId == parentDocumentId)
         .ToList();
 
-      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+      /* var downloadTargets = new Dictionary<Action<Texture2D>, string>();
       bool needDownload = forceRedownload ? true : locationTarget.Any((x) => x.IsThumbnailImageAssetDownloaded() == false);
 
       // Debug.Log($"[DataManager.cs]| need download thumbnail asset?? {needDownload}...");
@@ -520,6 +529,28 @@ namespace Tour360TelkomCorpu.DataManager
           }
         }
 
+      }
+
+      if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        onDone?.Invoke(locationTarget);
+        yield break;
+      } */
+
+      // Clone supaya texture tidak nyangkut di master list
+      List<LocationDataModel> locationTarget = CloneLocationListWithoutTextures(sourceLocations);
+
+      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+
+      // Untuk panel navigasi facility kita cuma pakai thumbnail
+      foreach (var loc in locationTarget)
+      {
+        var pairs = loc.GetDownloadableThumbnailImageAssetList(restAPI.targetAPIConfig.baseUrl);
+        foreach (var kv in pairs)
+        {
+          downloadTargets[kv.Key] = kv.Value;
+        }
       }
 
       if (downloadTargets.Count == 0)
@@ -573,8 +604,8 @@ namespace Tour360TelkomCorpu.DataManager
 
       // Debug.Log($"[DataManager.cs]: try to search for location with category '{categoryDocumentId}'");
 
-      List<LocationDataModel> locationTarget = new List<LocationDataModel>();
-      locationTarget = _locationDataList
+      // List<LocationDataModel> locationTarget = new List<LocationDataModel>();
+      /* locationTarget = _locationDataList
         .Where(loc =>
             loc.locationType == LocationType.BUILDING &&
             loc.IsHasCategory(categoryDocumentId) == true &&
@@ -603,6 +634,38 @@ namespace Tour360TelkomCorpu.DataManager
       {
         onProgress?.Invoke(1f);
         result?.Invoke(_buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId), _buildingCategoryList.Where((c) => c.buildings.Count > 0).ToList(), locationTarget);
+        yield break;
+      } */
+
+      var sourceLocations = _locationDataList
+        .Where(loc =>
+            loc.locationType == LocationType.BUILDING &&
+            loc.IsHasCategory(categoryDocumentId) == true &&
+            loc.show_on_menu_panel == true)
+        .ToList();
+
+      // Clone supaya texture tidak disimpan di _locationDataList
+      List<LocationDataModel> locationTarget = CloneLocationListWithoutTextures(sourceLocations);
+
+      var downloadTargets = new Dictionary<Action<Texture2D>, string>();
+
+      // Semua thumbnail building untuk kategori ini
+      foreach (var loc in locationTarget)
+      {
+        var pairs = loc.GetDownloadableThumbnailImageAssetList(restAPI.targetAPIConfig.baseUrl);
+        foreach (var kv in pairs)
+        {
+          downloadTargets[kv.Key] = kv.Value;
+        }
+      }
+
+      var selectedCategory = _buildingCategoryList.FirstOrDefault((x) => x.documentId == categoryDocumentId);
+      var nonEmptyCategories = _buildingCategoryList.Where((c) => c.buildings.Count > 0).ToList();
+
+      if (downloadTargets.Count == 0)
+      {
+        onProgress?.Invoke(1f);
+        result?.Invoke(selectedCategory, nonEmptyCategories, locationTarget);
         yield break;
       }
 
@@ -638,5 +701,156 @@ namespace Tour360TelkomCorpu.DataManager
       if (result == null) return null;
       return _buildingCategoryList[0];
     }
+
+    #region ===== Location Clone Helper =====
+
+    private LocationDataModel CloneLocationWithoutTextures(LocationDataModel source)
+    {
+      if (source == null) return null;
+
+      var clone = new LocationDataModel
+      {
+        name = source.name,
+        documentId = source.documentId,
+        locationType = source.locationType,
+        building_parent = source.building_parent,
+        bookable_status = source.bookable_status,
+        show_on_menu_panel = source.show_on_menu_panel,
+        first_camera_pov = source.first_camera_pov,
+        thumbnail_name = source.thumbnail_name,
+        description_text = source.description_text,
+        building_categories = source.building_categories != null
+              ? new List<BuildingCategory>(source.building_categories)
+              : new List<BuildingCategory>()
+      };
+
+      // ===== ImageField: buat instance baru, copy hanya URL =====
+      clone.background_360_image = source.background_360_image != null
+          ? new ImageField { url = source.background_360_image.url }
+          : null;
+
+      clone.thumbnail_image = source.thumbnail_image != null
+          ? new ImageField { url = source.thumbnail_image.url }
+          : null;
+
+      clone.facility_detail_image = source.facility_detail_image != null
+          ? new ImageField { url = source.facility_detail_image.url }
+          : null;
+
+      clone.maps_image = source.maps_image != null
+          ? new ImageField { url = source.maps_image.url }
+          : null;
+
+      clone.description_image = source.description_image != null
+          ? new ImageField { url = source.description_image.url }
+          : null;
+
+      // ===== Gallery =====
+      if (source.gallery != null)
+      {
+        clone.gallery = new List<FacilityGallery>(source.gallery.Count);
+        foreach (var g in source.gallery)
+        {
+          if (g == null)
+          {
+            clone.gallery.Add(null);
+            continue;
+          }
+
+          var newGallery = new FacilityGallery
+          {
+            content_images = g.content_images != null
+                  ? g.content_images.Select(img =>
+                      img != null ? new ImageField { url = img.url } : null
+                  ).ToList()
+                  : new List<ImageField>(),
+            hotspot_configuration = g.hotspot_configuration != null
+                  ? new HotspotConfiguration
+                  {
+                    hotspot_title = g.hotspot_configuration.hotspot_title,
+                    coordinate_x = g.hotspot_configuration.coordinate_x,
+                    coordinate_y = g.hotspot_configuration.coordinate_y,
+                    hotspot_image = g.hotspot_configuration.hotspot_image != null
+                          ? new ImageField
+                          {
+                            url = g.hotspot_configuration.hotspot_image.url
+                          }
+                          : null
+                  }
+                  : null
+          };
+
+          clone.gallery.Add(newGallery);
+        }
+      }
+      else
+      {
+        clone.gallery = new List<FacilityGallery>();
+      }
+
+      // ===== Navigations =====
+      if (source.navigations != null)
+      {
+        clone.navigations = new List<NavigationSetting>(source.navigations.Count);
+        foreach (var nav in source.navigations)
+        {
+          if (nav == null)
+          {
+            clone.navigations.Add(null);
+            continue;
+          }
+
+          var newNav = new NavigationSetting
+          {
+            target_type = nav.target_type,
+            building_target = nav.building_target != null
+                  ? new BuildingTarget
+                  {
+                    documentId = nav.building_target.documentId,
+                    name = nav.building_target.name
+                  }
+                  : null,
+            facility_target = nav.facility_target != null
+                  ? new FacilityTarget
+                  {
+                    documentId = nav.facility_target.documentId,
+                    name = nav.facility_target.name
+                  }
+                  : null,
+            hotspot_configuration = nav.hotspot_configuration != null
+                  ? new HotspotConfiguration
+                  {
+                    hotspot_title = nav.hotspot_configuration.hotspot_title,
+                    coordinate_x = nav.hotspot_configuration.coordinate_x,
+                    coordinate_y = nav.hotspot_configuration.coordinate_y,
+                    hotspot_image = nav.hotspot_configuration.hotspot_image != null
+                          ? new ImageField
+                          {
+                            url = nav.hotspot_configuration.hotspot_image.url
+                          }
+                          : null
+                  }
+                  : null
+          };
+
+          clone.navigations.Add(newNav);
+        }
+      }
+      else
+      {
+        clone.navigations = new List<NavigationSetting>();
+      }
+
+      return clone;
+    }
+
+    private List<LocationDataModel> CloneLocationListWithoutTextures(IEnumerable<LocationDataModel> sources)
+    {
+      if (sources == null) return new List<LocationDataModel>();
+      return sources.Select(CloneLocationWithoutTextures).ToList();
+    }
+
+    #endregion
+
   }
 }

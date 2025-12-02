@@ -18,6 +18,7 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.0
             #include "UnityCG.cginc"
 
             struct appdata
@@ -56,10 +57,10 @@
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            float4 frag (v2f i) : SV_Target
             {
-                fixed4 colA = tex2D(_Texture_A, i.uvA);
-                fixed4 colB = tex2D(_Texture_B, i.uvB);
+                float4 colA = tex2D(_Texture_A, i.uvA);
+                float4 colB = tex2D(_Texture_B, i.uvB);
 
                 return lerp(colA, colB, _Blend);
             }
