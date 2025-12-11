@@ -510,7 +510,8 @@ namespace Tour360TelkomCorpu.DataManager
         .Where(loc =>
             loc.locationType == LocationType.FACILITY &&
             loc.building_parent != null &&
-            loc.building_parent.documentId == parentDocumentId)
+            loc.building_parent.documentId == parentDocumentId &&
+            loc.show_on_menu_panel == true)
         .ToList();
 
       /* var downloadTargets = new Dictionary<Action<Texture2D>, string>();
