@@ -8,6 +8,7 @@ namespace Tour360TelkomCorpu.TourManager
 {
     using Tour360TelkomCorpu.DataManager;
     using Tour360TelkomCorpu.CanvasManager;
+    using System.Collections;
 
     public class TourManager : MonoBehaviour
     {
@@ -29,6 +30,10 @@ namespace Tour360TelkomCorpu.TourManager
         [SerializeField] private bool _isAlwaysShowLocationDescription = true;
         public float minVolumeMasterAudio = 0.3f;
         public float maxVolumeMasterAudio = 0.7f;
+
+        [Space(10f)]
+
+        private Coroutine _cleanupCoroutine;
 
         [Header("Component References")]
         [SerializeField] private DataManager _dataManager;
@@ -103,6 +108,8 @@ namespace Tour360TelkomCorpu.TourManager
             StartCoroutine(_dataManager.RequestTelkomCorpuAreaOptionContent((data) =>
             {
                 _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, null, (object documentId) => GetTelkomCorpuDataMaster((string)documentId), null);
+                _visitedLocationIndexList.Clear();
+                m_currentLocationIndex = 0;
             },
                 (progress) => { /* Debug.Log($"{progress}") */ },
                 false
@@ -148,6 +155,17 @@ namespace Tour360TelkomCorpu.TourManager
                 locationIndex: targetIndex,
                 onValidStart: () =>
                 {
+                    if (_cleanupCoroutine != null)
+                    {
+                        StopCoroutine(_cleanupCoroutine);
+                    }
+
+                    _cleanupCoroutine = StartCoroutine(CleanupLocationAssetsCoroutine(
+                        _locationData,
+                        deepCleanup: true,
+                        maxDestroyPerFrame: 50
+                    ));
+
                     m_isTryToLoadingAsset = true;
                     _canvasManager.loadingScreen.ShowLoadingGif(false);
 
@@ -192,11 +210,6 @@ namespace Tour360TelkomCorpu.TourManager
                                 {
                                     _canvasManager.OpenPanel(PanelType.BookingSection, new FormatPanelBooking($"", $"https://facilitycorpu.id/booking/create?type=classroom&&classroom={5}"), (object link) => OpenLink((string)link), null);
                                 });
-
-                                if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
-                                {
-                                    GenerateShowLocationDescriptionAction()?.Invoke();
-                                }
 
                                 if (_locationData.locationType == LocationType.FACILITY && _locationData.gallery.Count > 0)
                                 {
@@ -300,6 +313,11 @@ namespace Tour360TelkomCorpu.TourManager
 
                                 _canvasManager.loadingScreen.HideLoadingGif();
                                 m_isTryToLoadingAsset = false;
+
+                                if (_isAlwaysShowLocationDescription && _locationData.locationType == LocationType.FACILITY)
+                                {
+                                    GenerateShowLocationDescriptionAction()?.Invoke();
+                                }
                             }
                         );
                         // END: SET ASSET FUNCTION ...
@@ -608,5 +626,156 @@ namespace Tour360TelkomCorpu.TourManager
         }
 
         #endregion
+
+        #region ===== MEMORY CLEANUP =====
+
+        private IEnumerator CleanupLocationAssetsCoroutine(
+            LocationDataModel loc,
+            bool deepCleanup,
+            int maxDestroyPerFrame = 10
+        )
+        {
+            if (loc == null) yield break;
+
+            int destroyedThisFrame = 0;
+
+            // Helper lokal untuk destroy bertahap
+            System.Action<Texture2D> destroyTex = (tex) =>
+            {
+                if (tex == null) return;
+                Destroy(tex);
+            };
+
+            // 1. Background 360
+            /* if (loc.background_360_image != null && loc.background_360_image.textureImage != null)
+            {
+                destroyTex(loc.background_360_image.textureImage);
+                loc.background_360_image.textureImage = null;
+
+                destroyedThisFrame++;
+                if (destroyedThisFrame >= maxDestroyPerFrame)
+                {
+                    destroyedThisFrame = 0;
+                    yield return null; // jeda 1 frame
+                }
+            } */
+
+            // 2. Maps & description image (umumnya hanya di facility / building tertentu)
+            if (loc.maps_image != null && loc.maps_image.textureImage != null)
+            {
+                destroyTex(loc.maps_image.textureImage);
+                loc.maps_image.textureImage = null;
+
+                destroyedThisFrame++;
+                if (destroyedThisFrame >= maxDestroyPerFrame)
+                {
+                    destroyedThisFrame = 0;
+                    yield return null;
+                }
+            }
+
+            if (loc.description_image != null && loc.description_image.textureImage != null)
+            {
+                destroyTex(loc.description_image.textureImage);
+                loc.description_image.textureImage = null;
+
+                destroyedThisFrame++;
+                if (destroyedThisFrame >= maxDestroyPerFrame)
+                {
+                    destroyedThisFrame = 0;
+                    yield return null;
+                }
+            }
+
+            // 3. Facility detail image
+            if (loc.facility_detail_image != null && loc.facility_detail_image.textureImage != null)
+            {
+                destroyTex(loc.facility_detail_image.textureImage);
+                loc.facility_detail_image.textureImage = null;
+
+                destroyedThisFrame++;
+                if (destroyedThisFrame >= maxDestroyPerFrame)
+                {
+                    destroyedThisFrame = 0;
+                    yield return null;
+                }
+            }
+
+            // 4. Gallery + gallery hotspot
+            if (loc.gallery != null)
+            {
+                foreach (var g in loc.gallery)
+                {
+                    if (g == null) continue;
+
+                    if (g.content_images != null)
+                    {
+                        foreach (var img in g.content_images)
+                        {
+                            if (img == null || img.textureImage == null) continue;
+
+                            destroyTex(img.textureImage);
+                            img.textureImage = null;
+
+                            destroyedThisFrame++;
+                            if (destroyedThisFrame >= maxDestroyPerFrame)
+                            {
+                                destroyedThisFrame = 0;
+                                yield return null;
+                            }
+                        }
+                    }
+
+                    if (g.hotspot_configuration != null &&
+                        g.hotspot_configuration.hotspot_image != null &&
+                        g.hotspot_configuration.hotspot_image.textureImage != null)
+                    {
+                        destroyTex(g.hotspot_configuration.hotspot_image.textureImage);
+                        g.hotspot_configuration.hotspot_image.textureImage = null;
+
+                        destroyedThisFrame++;
+                        if (destroyedThisFrame >= maxDestroyPerFrame)
+                        {
+                            destroyedThisFrame = 0;
+                            yield return null;
+                        }
+                    }
+                }
+            }
+
+            // 5. Navigations hotspot icon
+            if (loc.navigations != null)
+            {
+                foreach (var nav in loc.navigations)
+                {
+                    if (nav == null ||
+                        nav.hotspot_configuration == null ||
+                        nav.hotspot_configuration.hotspot_image == null ||
+                        nav.hotspot_configuration.hotspot_image.textureImage == null)
+                        continue;
+
+                    destroyTex(nav.hotspot_configuration.hotspot_image.textureImage);
+                    nav.hotspot_configuration.hotspot_image.textureImage = null;
+
+                    destroyedThisFrame++;
+                    if (destroyedThisFrame >= maxDestroyPerFrame)
+                    {
+                        destroyedThisFrame = 0;
+                        yield return null;
+                    }
+                }
+            }
+
+            // 6. Deep cleanup opsional: bebaskan asset tidak terpakai + GC
+            if (deepCleanup)
+            {
+                // UnloadUnusedAssets cukup berat → dijalankan saat layar sedang fade/loading
+                yield return Resources.UnloadUnusedAssets();
+                GC.Collect();
+            }
+        }
+
+        #endregion
+
     }
 }

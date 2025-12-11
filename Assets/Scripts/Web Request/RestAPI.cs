@@ -215,7 +215,7 @@ namespace Smarteye.RestAPI
 
                 Debug.Log($"[RestAPI]: Get texture from {url}");
 
-                using (var req = UnityWebRequestTexture.GetTexture(url, false))
+                using (var req = UnityWebRequestTexture.GetTexture(url, true))
                 {
                     if (headers != null)
                     {
@@ -244,6 +244,10 @@ namespace Smarteye.RestAPI
                     else
                     {
                         Texture2D texDownloaded = DownloadHandlerTexture.GetContent(req);
+                        texDownloaded.filterMode = FilterMode.Trilinear;
+                        texDownloaded.anisoLevel = 8;
+                        texDownloaded.wrapModeU = TextureWrapMode.Repeat;
+                        texDownloaded.wrapModeV = TextureWrapMode.Repeat;
 
                         string marker = "uploads/";
                         int index = url.LastIndexOf(marker);
