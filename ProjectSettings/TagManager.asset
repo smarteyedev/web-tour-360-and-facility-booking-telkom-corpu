@@ -11,12 +11,12 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Panel
+  - 'Bar Menu: Description '
+  - 'Bar Menu: button Close '
+  - Jadwal
+  - 'Bar Menu: Bar Navigation '
+  - 'Bar Menu: Auto Rotate '
   - 
   - 
   - 
@@ -40,4 +40,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: adw
+    uniqueID: 2681858841
     locked: 0
