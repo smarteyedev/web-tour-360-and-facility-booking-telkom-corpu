@@ -84,7 +84,7 @@ namespace Tour360TelkomCorpu.DataManager
         public List<BuildingCategory> building_categories;
         public bool show_on_menu_panel;
         public ImageField background_360_image;
-        public int first_camera_pov;
+        public float first_camera_pov;
         public ImageField thumbnail_image;
         public string thumbnail_name;
         public ImageField maps_image;
@@ -162,7 +162,7 @@ namespace Tour360TelkomCorpu.DataManager
     [Serializable]
     public class NavigationSetting
     {
-        public TargetHotspot target_type;
+        public TargetHotspot? target_type;
         public BuildingTarget building_target;
         public FacilityTarget facility_target;
         public HotspotConfiguration hotspot_configuration;
