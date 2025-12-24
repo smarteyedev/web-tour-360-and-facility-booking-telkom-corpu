@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cf05fb1f20ebc84aa2263f1b836d6a0, type: 3}
   m_Name: Strapi API (Localhost)
   m_EditorClassIdentifier: 
-  baseUrl: http://localhost:1337
+  baseUrl: https://facility.smarteye.id
   endpoints:
   - title: HitStrapi
     targetEndpoint: /graphql

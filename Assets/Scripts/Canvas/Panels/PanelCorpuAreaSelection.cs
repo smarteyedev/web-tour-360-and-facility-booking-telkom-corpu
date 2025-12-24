@@ -40,40 +40,77 @@ namespace Tour360TelkomCorpu.CanvasManager
                 _scrollRect = GetComponentInChildren<ScrollRect>();
         }
 
-        protected override void ShowPanel(List<TelkomCorpuAreaCard> cardData, Action<string> callbackUsingDocumentId = null, Action onClosePanel = null)
+        protected override void ShowPanel(
+    List<TelkomCorpuAreaCard> cardData,
+    Action<string> callbackUsingDocumentId = null,
+    Action onClosePanel = null)
         {
-            _panelContainer.gameObject.SetActive(true);
+            // Validasi reference wajib
+            if (!_panelContainer || !_scrollRect || !_rectContentParent || !_prefabCorpuSelectionCard)
+            {
+                Debug.LogError(
+                    $"PanelCorpuAreaSelection: Reference belum lengkap. " +
+                    $"panelContainer={_panelContainer}, scrollRect={_scrollRect}, contentParent={_rectContentParent}, prefab={_prefabCorpuSelectionCard}",
+                    this
+                );
+                return;
+            }
 
-            if (cardData == default) return;
+            _panelContainer.SetActive(true);
+
+            if (cardData == null || cardData.Count == 0)
+            {
+                // Sembunyikan card yang sudah ada
+                for (int i = 0; i < m_cardPooling.Count; i++)
+                    if (m_cardPooling[i]) m_cardPooling[i].gameObject.SetActive(false);
+
+                return;
+            }
 
             for (int i = 0; i < cardData.Count; i++)
             {
-                TelkomCorpuAreaCard D = cardData[i];
-
-                SelectionCard card;
-                if (i < m_cardPooling.Count)
+                var d = cardData[i];
+                if (d == null)
                 {
-                    card = m_cardPooling[i];
+                    Debug.LogWarning($"PanelCorpuAreaSelection: cardData[{i}] is NULL", this);
+                    continue;
                 }
-                else
+
+                // Ambil/Instantiate card
+                SelectionCard card = (i < m_cardPooling.Count) ? m_cardPooling[i] : null;
+
+                if (card == null)
                 {
                     card = Instantiate(_prefabCorpuSelectionCard, _rectContentParent, false);
-                    if (i >= m_cardPooling.Count) m_cardPooling.Add(card);
+
+                    if (i < m_cardPooling.Count) m_cardPooling[i] = card;
+                    else m_cardPooling.Add(card);
                 }
 
                 if (!card.gameObject.activeSelf) card.gameObject.SetActive(true);
+
+                // Ini penyebab NRE paling umum:
+                var sprite = (d.thumbnail_image != null) ? d.thumbnail_image.GetSpriteImage() : null;
+
+                if (d.thumbnail_image == null)
+                    Debug.LogWarning($"PanelCorpuAreaSelection: thumbnail_image NULL. index={i}, docId={d.documentId}", this);
+
                 card.SetupCard(
-                    bgCard: D.thumbnail_image.GetSpriteImage(),
-                    cardName: D.thumbnail_name,
-                    address: D.address,
-                    isOpenForVisitor: D.open_for_visitor,
-                    onClickAction: () => callbackUsingDocumentId?.Invoke($"{D.documentId}")
+                    bgCard: sprite,
+                    cardName: d.thumbnail_name ?? string.Empty,
+                    address: d.address ?? string.Empty,
+                    isOpenForVisitor: d.open_for_visitor,
+                    onClickAction: () => callbackUsingDocumentId?.Invoke(d.documentId)
                 );
-                if (card.transform.GetSiblingIndex() != i) card.transform.SetSiblingIndex(i);
+
+                if (card.transform.GetSiblingIndex() != i)
+                    card.transform.SetSiblingIndex(i);
             }
 
+            // Matikan sisa pooling yang tidak kepakai
             for (int i = cardData.Count; i < m_cardPooling.Count; i++)
-                if (m_cardPooling[i] && m_cardPooling[i].gameObject.activeSelf) m_cardPooling[i].gameObject.SetActive(false);
+                if (m_cardPooling[i] && m_cardPooling[i].gameObject.activeSelf)
+                    m_cardPooling[i].gameObject.SetActive(false);
 
             SetupCarousel();
         }

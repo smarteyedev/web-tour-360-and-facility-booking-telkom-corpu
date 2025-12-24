@@ -55,6 +55,8 @@ namespace Tour360TelkomCorpu.DataManager
           if (_telkomCorpuAreaOptionList.Count > 0) _telkomCorpuAreaOptionList.Clear();
           _telkomCorpuAreaOptionList = response.data.telkomCorpuAreas;
 
+
+
           areaOptionProcess = true;
           areaOptionResult = true;
         },
