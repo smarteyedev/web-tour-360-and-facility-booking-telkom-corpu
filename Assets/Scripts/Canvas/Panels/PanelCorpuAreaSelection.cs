@@ -18,10 +18,10 @@ namespace Tour360TelkomCorpu.CanvasManager
         [SerializeField] private float _snapSpeed = 10f;
         [SerializeField] private bool _loop = false;
 
-        private int m_currentIndex = 0;
-        private int m_pageCount = 0;
-        private float[] m_pagePositions;
-        private Vector2 m_dragStartPos;
+        [SerializeField] private int m_currentIndex = 0;
+        [SerializeField] private int m_pageCount = 0;
+        [SerializeField] private float[] m_pagePositions;
+        [SerializeField] private Vector2 m_dragStartPos;
 
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
@@ -89,7 +89,6 @@ namespace Tour360TelkomCorpu.CanvasManager
 
                 if (!card.gameObject.activeSelf) card.gameObject.SetActive(true);
 
-                // Ini penyebab NRE paling umum:
                 var sprite = (d.thumbnail_image != null) ? d.thumbnail_image.GetSpriteImage() : null;
 
                 if (d.thumbnail_image == null)
@@ -167,6 +166,9 @@ namespace Tour360TelkomCorpu.CanvasManager
             SetPageImmediate(0);
 
             // tombol
+            _nextButton.onClick.RemoveAllListeners();
+            _prevButton.onClick.RemoveAllListeners();
+
             if (_nextButton) _nextButton.onClick.AddListener(NextPage);
             if (_prevButton) _prevButton.onClick.AddListener(PreviousPage);
         }

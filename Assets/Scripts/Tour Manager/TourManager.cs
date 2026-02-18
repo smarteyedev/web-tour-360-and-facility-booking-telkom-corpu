@@ -107,7 +107,7 @@ namespace Tour360TelkomCorpu.TourManager
 
             StartCoroutine(_dataManager.RequestTelkomCorpuAreaOptionContent((data) =>
             {
-                _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, null, (object documentId) => GetTelkomCorpuDataMaster((string)documentId), null);
+                _canvasManager.OpenPanel(PanelType.CorpuAreaSelection, data, (object documentId) => GetTelkomCorpuDataMaster((string)documentId), null);
                 _visitedLocationIndexList.Clear();
                 m_currentLocationIndex = 0;
             },
@@ -773,6 +773,15 @@ namespace Tour360TelkomCorpu.TourManager
                 yield return Resources.UnloadUnusedAssets();
                 GC.Collect();
             }
+        }
+
+        #endregion
+
+        #region Button_Settings
+
+        public void ExitTour()
+        {
+
         }
 
         #endregion
