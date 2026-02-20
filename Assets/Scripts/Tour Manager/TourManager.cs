@@ -482,6 +482,7 @@ namespace Tour360TelkomCorpu.TourManager
                     {
                         if (m_isTryToLoadingAsset == true) return;
                         FormatPanelDescriptionAsset dFacility = new FormatPanelDescriptionAsset();
+                        dFacility.titleText = _locationData.name;
                         dFacility.descriptionText = _locationData.description_text;
                         dFacility.facilityDetailSprite = _locationData.facility_detail_image.GetSpriteImage();
                         dFacility.isCanBook = _locationData.bookable_status;

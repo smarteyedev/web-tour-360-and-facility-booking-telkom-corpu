@@ -33,6 +33,7 @@ namespace Tour360TelkomCorpu.CanvasManager
     [Serializable]
     public class FormatPanelDescriptionAsset
     {
+        public string titleText;
         public string descriptionText;
         public Sprite facilityDetailSprite;
         public bool isCanBook;

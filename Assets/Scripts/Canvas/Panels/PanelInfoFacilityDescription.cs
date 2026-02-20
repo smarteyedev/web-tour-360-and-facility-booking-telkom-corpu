@@ -10,6 +10,7 @@ namespace Tour360TelkomCorpu.CanvasManager
         [Header("Guidance Section")]
         [Header("Component References")]
         [SerializeField] private GameObject _panelContainer;
+        [SerializeField] private TextMeshProUGUI _TextTitle;
         [SerializeField] private TextMeshProUGUI _TextDescription;
         [SerializeField] private Image _ImageDetail;
         [SerializeField] private Button _buttonClose;
@@ -36,6 +37,9 @@ namespace Tour360TelkomCorpu.CanvasManager
 
             if (_TextDescription != null)
                 _TextDescription.text = finalText;
+
+            if (_TextTitle != null)
+                _TextTitle.text = descriptionAsset.titleText;
 
             if (_ImageDetail != null && descriptionAsset.facilityDetailSprite != null)
                 _ImageDetail.sprite = descriptionAsset.facilityDetailSprite;
